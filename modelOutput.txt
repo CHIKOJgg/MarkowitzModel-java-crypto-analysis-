@@ -1,0 +1,30 @@
+bitcoin ethereum solana hyperliquid the-open-network 
+BITCOIN: 33.00%
+ETHEREUM: 33.00%
+SOLANA: 1.00%
+HYPERLIQUID: 33.00%
+THE-OPEN-NETWORK: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle 
+BITCOIN: 1.00%
+ETHEREUM: 33.00%
+SOLANA: 0.00%
+HYPERLIQUID: 33.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 33.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 1.00%
+SOLANA: 0.00%
+HYPERLIQUID: 33.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 33.00%
+MONERO: 33.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 33.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 11.99%
+MONERO: 33.00%
+TETHER: 22.01%
