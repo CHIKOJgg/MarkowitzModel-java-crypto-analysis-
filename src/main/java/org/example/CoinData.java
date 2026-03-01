@@ -1,5 +1,7 @@
 package org.example;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.DataOutput;
 import java.io.FileReader;
 import java.util.*;
@@ -9,6 +11,12 @@ import java.util.stream.IntStream;
 public class CoinData{
         private String coinName;
         private List<List<Double>> prices;
+       // @SerializedName("total_volumes")
+        private List<List<Double>> total_volumes;
+        //@SerializedName("market_caps")
+        private List<List<Double>> market_caps;
+        private Map<String, List<Double>> marketCapMap = new HashMap<>();
+        private Map<String, List<Double>> volumeMap = new HashMap<>();
         private Map<String, List<Double>> pricesMap = new HashMap<>();
         private Map<String, List<Double>> returnMap = new HashMap<>();
         public void setPrices(List<List<Double>> prices) {
@@ -62,4 +70,20 @@ public class CoinData{
                         .boxed()
                         .toList(); // берем только саму цену;
         }
+
+    public List<List<Double>> getMarketCap() {
+        return market_caps;
+    }
+
+    public void setMarketCap(List<List<Double>> marketCap) {
+        this.market_caps = marketCap;
+    }
+
+    public List<List<Double>> getVolume() {
+        return total_volumes;
+    }
+
+    public void setVolume(List<List<Double>> volume) {
+        this.total_volumes = volume;
+    }
 }

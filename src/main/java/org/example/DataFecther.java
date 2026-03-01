@@ -59,9 +59,13 @@ public class DataFecther {
         ArrayList<CompletableFuture<CoinData>> futures = coinList.stream().map(
                 coin->CompletableFuture.supplyAsync(()->{
                     HttpResponse<String> response = fetchData(coin);
+
                     CoinData coinData = parseCoin(response);
                     coinData.setPrices(coinData.getPrices());
                     coinData.setCoinName(coin);
+                   if (coin.equals("bitcoin")){
+                       System.out.println(response.body());
+                   }
                     coinData.setPricesMap();
                     coinData.setReturnMap();
                     return coinData;
