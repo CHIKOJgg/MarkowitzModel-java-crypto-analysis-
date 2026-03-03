@@ -8,13 +8,23 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Main {
 
     private static final List<String> coins = List.of(
-            "bitcoin", "ethereum", "solana", "hyperliquid",
-            "the-open-network", "mantle", "monero", "tether"
+            "bitcoin"
+            , "ethereum"
+            , "solana"
+            , "hyperliquid"
+            , "the-open-network"
+            , "mantle"
+            , "monero"
+           // , "tether"
+
+            ,"zcash"
     );
+    private static final double MAX_TOKEN_SHARE = 1;
 
     public static void main(String[] args) {
 
@@ -23,11 +33,7 @@ public class Main {
 
         PortfolioProcessor processor = new PortfolioProcessor();
         MatrixR064 returnMatrix = processor.buildReturnMatrix(data);
-
-        // ---- Expected Returns (Mean vector)
         MatrixR064 expectedReturns = returnMatrix.reduceColumns(Aggregator.AVERAGE);
-
-        // ---- Covariance Matrix
         MatrixR064 centered = returnMatrix.subtract(expectedReturns);
         MatrixR064 covarianceMatrix = centered.transpose()
                 .multiply(centered)
@@ -43,10 +49,10 @@ public class Main {
         MatrixR064 equalReturns = receiver.get();
 
         MarkowitzModel minRiskModel = new MarkowitzModel(covarianceMatrix, equalReturns);
-        minRiskModel.setShortingAllowed(false);
+        minRiskModel.setShortingAllowed(true);
 
         for (int i = 0; i < coins.size(); i++) {
-            minRiskModel.setUpperLimit(i, BigDecimal.valueOf(0.4));
+            minRiskModel.setUpperLimit(i, BigDecimal.valueOf(MAX_TOKEN_SHARE));
         }
 
         System.out.println("min risk");
@@ -56,7 +62,7 @@ public class Main {
         optimalModel.setShortingAllowed(false);
 
         for (int i = 0; i < coins.size(); i++) {
-            optimalModel.setUpperLimit(i, BigDecimal.valueOf(0.33));
+            optimalModel.setUpperLimit(i, BigDecimal.valueOf(MAX_TOKEN_SHARE));
         }
 
         System.out.println("\n optimal markowitz (maximizin sharp coefficient)");

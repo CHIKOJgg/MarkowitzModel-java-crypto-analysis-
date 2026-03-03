@@ -63,9 +63,6 @@ public class DataFecther {
                     CoinData coinData = parseCoin(response);
                     coinData.setPrices(coinData.getPrices());
                     coinData.setCoinName(coin);
-                   if (coin.equals("bitcoin")){
-                       System.out.println(response.body());
-                   }
                     coinData.setPricesMap();
                     coinData.setReturnMap();
                     return coinData;

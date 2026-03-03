@@ -14,6 +14,24 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>6.1.0-M1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.27.6</version>
+            <scope>test</scope>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.junit.jupiter</groupId>-->
+<!--            <artifactId>junit-jupiter-engine</artifactId>-->
+<!--            <version>5.9.1</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <!-- Source: https://mvnrepository.com/artifact/org.ojalgo/ojalgo -->
         <dependency>
             <groupId>org.ojalgo</groupId>
@@ -33,6 +51,18 @@
             <artifactId>jasypt</artifactId>
             <version>1.9.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency> <dependency>
+        <groupId>org.junit.jupiter</groupId>
+
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>6.1.0-M1</version>
+        <scope>test</scope>
+    </dependency>
         <!-- Source: https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
 
     </dependencies>

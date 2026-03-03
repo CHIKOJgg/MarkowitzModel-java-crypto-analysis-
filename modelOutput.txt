@@ -118,3 +118,243 @@ THE-OPEN-NETWORK: 0.00%
 MANTLE: 11.32%
 MONERO: 33.00%
 TETHER: 22.68%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 1.60%
+SOLANA: 0.00%
+HYPERLIQUID: 33.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 32.40%
+MONERO: 33.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 49.04%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 50.96%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 49.07%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 50.93%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 49.03%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 50.97%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 48.10%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 51.90%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.29%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.71%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.29%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.71%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 40.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 40.00%
+TETHER: 20.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 40.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 20.00%
+MONERO: 40.00%
+bitcoin ethereum solana the-open-network mantle 
+BITCOIN: 20.00%
+ETHEREUM: 40.00%
+SOLANA: 0.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 40.00%
+bitcoin ethereum solana the-open-network mantle 
+BITCOIN: 20.00%
+ETHEREUM: 40.00%
+SOLANA: 0.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 40.00%
+bitcoin ethereum solana the-open-network mantle tether 
+BITCOIN: 0.00%
+ETHEREUM: 20.00%
+SOLANA: 0.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 40.00%
+TETHER: 40.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 40.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 40.00%
+TETHER: 20.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.09%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.91%
+TETHER: 0.00%
+hyperliquid monero tether 
+HYPERLIQUID: 47.10%
+MONERO: 52.90%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.08%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.92%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 46.92%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 53.08%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 30.00%
+MONERO: 35.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.13%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.87%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 3.02%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 0.00%
+ZCASH: 96.98%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 30.00%
+MONERO: 35.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 2.54%
+MONERO: 35.00%
+TETHER: 27.46%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 47.06%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 52.94%
+TETHER: 0.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero tether 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 40.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 40.00%
+TETHER: 20.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 30.00%
+MONERO: 35.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 30.00%
+ZCASH: 35.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 35.00%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 30.00%
+ZCASH: 35.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 2.73%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 0.00%
+ZCASH: 97.27%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 0.00%
+ETHEREUM: 0.00%
+SOLANA: 0.00%
+HYPERLIQUID: 2.68%
+THE-OPEN-NETWORK: 0.00%
+MANTLE: 0.00%
+MONERO: 0.00%
+ZCASH: 97.32%
