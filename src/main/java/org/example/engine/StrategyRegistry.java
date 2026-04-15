@@ -23,11 +23,6 @@ public class StrategyRegistry {
     public static final String MOMENTUM_EQUAL    = "Momentum + Equal Weight";
     public static final String EWMA_EQUAL        = "EWMA + Equal Weight";
 
-    /**
-     * Build all strategies configured with the given parameters.
-     *
-     * @return ordered map of name → Strategy (preserves insertion order for UI)
-     */
     public static Map<String, Strategy> buildAll(Params p) {
         Map<String, Strategy> map = new LinkedHashMap<>();
 
