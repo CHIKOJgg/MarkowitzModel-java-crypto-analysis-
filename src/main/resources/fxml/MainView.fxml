@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controller.MainController"
+            stylesheets="@../css/dark.css"
+            prefWidth="1280" prefHeight="800">
+
+    <!-- ══════════════════  TOP – Header  ══════════════════════════════════ -->
+    <top>
+        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="16">
+            <padding><Insets top="14" bottom="14" left="22" right="22"/></padding>
+            <Label text="🪙" style="-fx-font-size:26;"/>
+            <VBox spacing="2">
+                <Label text="Crypto Portfolio Optimizer  ·  Quant Framework v2"
+                       styleClass="header-title"/>
+                <Label text="Data → Alpha → Portfolio → Risk → Execution → Backtest"
+                       styleClass="header-sub"/>
+            </VBox>
+        </HBox>
+    </top>
+
+    <!-- ══════════════════  LEFT – Control panel  ═══════════════════════════ -->
+    <left>
+        <ScrollPane fitToWidth="true" prefWidth="285" styleClass="sidebar-scroll"
+                    hbarPolicy="NEVER">
+            <VBox spacing="10" styleClass="sidebar">
+                <padding><Insets top="10" bottom="14" left="10" right="10"/></padding>
+
+                <!-- ── 1. Coin Universe ──────────────────────────────────── -->
+                <TitledPane text="📊  Coin Universe" expanded="true" styleClass="titled">
+                    <VBox spacing="6">
+                        <HBox spacing="6">
+                            <Button text="All"  onAction="#onSelectAllCoins"  styleClass="xs-btn" prefWidth="54"/>
+                            <Button text="None" onAction="#onSelectNoneCoins" styleClass="xs-btn" prefWidth="54"/>
+                        </HBox>
+                        <Separator/>
+                        <VBox fx:id="coinsPane" spacing="5"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ── 2. Strategies to Test ────────────────────────────── -->
+                <TitledPane text="🧪  Strategies" expanded="true" styleClass="titled">
+                    <VBox spacing="6">
+                        <HBox spacing="6">
+                            <Button text="All"  onAction="#onSelectAllStrat"  styleClass="xs-btn" prefWidth="54"/>
+                            <Button text="None" onAction="#onSelectNoneStrat" styleClass="xs-btn" prefWidth="54"/>
+                        </HBox>
+                        <Separator/>
+                        <VBox fx:id="strategyPane" spacing="5"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ── 3. Model Parameters ──────────────────────────────── -->
+                <TitledPane text="⚙️  Model Parameters" expanded="true" styleClass="titled">
+                    <VBox spacing="7">
+
+                        <Label text="Target Return / day (%):" styleClass="param-label"/>
+                        <Slider fx:id="targetReturnSlider" min="0.1" max="2.0" value="0.5"
+                                showTickLabels="true" majorTickUnit="0.5"/>
+                        <Label fx:id="targetReturnValue" text="0.50%" styleClass="slider-val"/>
+
+                        <Label text="Max Long (%):" styleClass="param-label"/>
+                        <Slider fx:id="maxLongSlider" min="5" max="50" value="20"
+                                showTickLabels="true" majorTickUnit="10"/>
+                        <Label fx:id="maxLongValue" text="20%" styleClass="slider-val"/>
+
+                        <Label text="Max Short (%):" styleClass="param-label"/>
+                        <Slider fx:id="maxShortSlider" min="0" max="30" value="15"
+                                showTickLabels="true" majorTickUnit="10"/>
+                        <Label fx:id="maxShortValue" text="-15%" styleClass="slider-val"/>
+
+                        <CheckBox fx:id="allowShortingCheck" text="Allow Shorting" selected="true"/>
+
+                        <Separator/>
+
+                        <Label text="EWMA α:" styleClass="param-label"/>
+                        <Slider fx:id="alphaSlider" min="0.01" max="0.5" value="0.1"
+                                showTickLabels="true" majorTickUnit="0.1"/>
+                        <Label fx:id="alphaValue" text="0.10" styleClass="slider-val"/>
+
+                        <Label text="Shrinkage λ (Ledoit-Wolf):" styleClass="param-label"/>
+                        <Slider fx:id="shrinkageSlider" min="0.1" max="1.0" value="0.9"
+                                showTickLabels="true" majorTickUnit="0.2"/>
+                        <Label fx:id="shrinkageValue" text="0.90" styleClass="slider-val"/>
+
+                        <Label text="Max Leverage:" styleClass="param-label"/>
+                        <Slider fx:id="leverageSlider" min="1.0" max="3.0" value="1.3"
+                                showTickLabels="true" majorTickUnit="0.5"/>
+                        <Label fx:id="leverageValue" text="1.30" styleClass="slider-val"/>
+
+                        <Label text="Momentum Look-back (days):" styleClass="param-label"/>
+                        <Spinner fx:id="momentumLookback" min="5" max="60" initialValue="20"
+                                 editable="true" prefWidth="90"/>
+
+                        <Separator/>
+                        <CheckBox fx:id="volScalingCheck" text="Volatility Scaling (Risk Model)"/>
+                        <Label text="Target Vol / day (%):" styleClass="param-label"/>
+                        <Slider fx:id="targetVolSlider" min="0.5" max="5.0" value="1.5"
+                                showTickLabels="true" majorTickUnit="1" disable="true"/>
+                        <Label fx:id="targetVolValue" text="1.5%" styleClass="slider-val" disable="true"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ── 4. Backtest Settings ──────────────────────────────── -->
+                <TitledPane text="🔄  Backtest Settings" expanded="false" styleClass="titled">
+                    <VBox spacing="7">
+                        <Label text="Training Window (days):" styleClass="param-label"/>
+                        <Spinner fx:id="windowSpinner" min="20" max="200"
+                                 initialValue="60" editable="true" prefWidth="100"/>
+
+                        <Label text="Prediction Horizon (days):" styleClass="param-label"/>
+                        <Spinner fx:id="horizonSpinner" min="1" max="30"
+                                 initialValue="7" editable="true" prefWidth="100"/>
+
+                        <Label text="Fee Rate (% one-way):" styleClass="param-label"/>
+                        <Slider fx:id="feeRateSlider" min="0" max="1.0" value="0.1"
+                                showTickLabels="true" majorTickUnit="0.25"/>
+                        <Label fx:id="feeRateValue" text="0.10%" styleClass="slider-val"/>
+                        <CheckBox fx:id="zeroCostCheck" text="Zero Cost (Gross PnL baseline)"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ── 5. API Key ────────────────────────────────────────── -->
+                <TitledPane text="🔑  CoinGecko API Key" expanded="false" styleClass="titled">
+                    <VBox spacing="6">
+                        <PasswordField fx:id="apiKeyField" promptText="CG-xxxx…"/>
+                        <Button text="Save" onAction="#onSaveApiKey"
+                                maxWidth="Infinity" styleClass="xs-btn"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ── Action buttons ────────────────────────────────────── -->
+                <VBox spacing="8">
+                    <Button fx:id="fetchBtn" text="⬇  1. Fetch Market Data"
+                            maxWidth="Infinity" styleClass="secondary-btn"
+                            onAction="#onFetchData"/>
+                    <Button fx:id="runBtn"   text="▶  2. Run All Strategies"
+                            maxWidth="Infinity" styleClass="primary-btn"
+                            onAction="#onRunStrategies"/>
+                    <Button fx:id="exportBtn" text="💾  Export Results"
+                            maxWidth="Infinity" styleClass="secondary-btn"
+                            onAction="#onExport"/>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </left>
+
+    <!-- ══════════════════  CENTER – Results TabPane  ═══════════════════════ -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="result-tabs">
+
+            <!-- ── Portfolio Weights tab ──────────────────────────────────── -->
+            <Tab text="📊  Portfolio Weights">
+                <VBox spacing="0">
+                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="tab-toolbar">
+                        <padding><Insets top="8" bottom="8" left="12" right="12"/></padding>
+                        <Label text="Strategy:" styleClass="param-label"/>
+                        <ComboBox fx:id="strategySelector" prefWidth="280"/>
+                    </HBox>
+                    <SplitPane dividerPositions="0.55" VBox.vgrow="ALWAYS">
+                        <PieChart fx:id="weightsChart" title="Allocation"
+                                  labelsVisible="true" legendVisible="true"
+                                  animated="false"/>
+                        <VBox spacing="12" styleClass="stats-panel">
+                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+                            <Label text="Portfolio Statistics" styleClass="section-title"/>
+                            <GridPane fx:id="statsGrid" hgap="14" vgap="8"/>
+                            <Separator/>
+                            <Label text="Weight Breakdown" styleClass="section-title"/>
+                            <TableView fx:id="weightsTable" VBox.vgrow="ALWAYS"/>
+                        </VBox>
+                    </SplitPane>
+                </VBox>
+            </Tab>
+
+            <!-- ── Backtest / Compare tab ─────────────────────────────────── -->
+            <Tab text="📈  Backtest &amp; Compare">
+                <VBox spacing="0">
+                    <!-- Equity curves -->
+                    <LineChart fx:id="equityChart" title="Equity Curves — All Strategies"
+                               animated="false" VBox.vgrow="ALWAYS" createSymbols="false"
+                               prefHeight="420">
+                        <xAxis><NumberAxis label="Rebalancing Step"/></xAxis>
+                        <yAxis><NumberAxis label="Equity (start = 1.0)"/></yAxis>
+                    </LineChart>
+
+                    <!-- Strategy comparison table -->
+                    <Label text="Strategy Comparison  (sorted by Sharpe ↓)"
+                           styleClass="section-title"
+                           style="-fx-padding: 6 0 4 12;"/>
+                    <TableView fx:id="compareTable" prefHeight="200"/>
+                </VBox>
+            </Tab>
+
+            <!-- ── Log tab ────────────────────────────────────────────────── -->
+            <Tab text="📝  Log">
+                <TextArea fx:id="logArea" editable="false" wrapText="true"/>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- ══════════════════  BOTTOM – Status bar  ════════════════════════════ -->
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="6" bottom="6" left="14" right="14"/></padding>
+            <ProgressBar fx:id="progressBar" prefWidth="200" visible="false"/>
+            <Label fx:id="statusLabel" text="Ready  —  Step 1: Fetch data, Step 2: Run strategies"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
