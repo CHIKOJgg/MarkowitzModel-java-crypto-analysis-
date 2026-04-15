@@ -358,3 +358,21 @@ THE-OPEN-NETWORK: 0.00%
 MANTLE: 0.00%
 MONERO: 0.00%
 ZCASH: 97.32%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 76.32%
+ETHEREUM: 100.00%
+SOLANA: -130.07%
+HYPERLIQUID: 100.00%
+THE-OPEN-NETWORK: -315.90%
+MANTLE: 69.65%
+MONERO: 100.00%
+ZCASH: 100.00%
+bitcoin ethereum solana hyperliquid the-open-network mantle monero zcash 
+BITCOIN: 10.91%
+ETHEREUM: 11.53%
+SOLANA: 6.67%
+HYPERLIQUID: 14.94%
+THE-OPEN-NETWORK: 20.00%
+MANTLE: 5.75%
+MONERO: 10.21%
+ZCASH: 20.00%
