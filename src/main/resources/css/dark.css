@@ -46,7 +46,7 @@
 /* ── TitledPane ───────────────────────────────────────────────────────────── */
 .titled > .title {
     -fx-background-color: #0f3460;
-    -fx-text-fill: #c8d0e0;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
 }
@@ -54,7 +54,11 @@
     -fx-background-color: #16213e;
     -fx-padding: 8 4 8 4;
 }
-
+.white-pane {
+    -fx-background-color: white;
+    -fx-padding: 6;
+    -fx-background-radius: 6;
+}
 /* ── Labels ───────────────────────────────────────────────────────────────── */
 .label {
     -fx-text-fill: #c8d0e0;

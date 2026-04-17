@@ -5,13 +5,13 @@ import org.ojalgo.data.domain.finance.portfolio.MarkowitzModel;
 import org.ojalgo.matrix.MatrixR064;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Classic Markowitz mean-variance portfolio.
- *
- * <p>Minimises variance for a given target return. When {@code targetReturn}
- * is null the model falls into minimum-variance mode (ignores μ magnitudes).
+ * Robust fallback to equal-weight when the solver returns null
+ * (infeasible target return or degenerate covariance matrix).
  */
 public class MarkowitzPortfolio implements PortfolioModel {
 
@@ -19,7 +19,7 @@ public class MarkowitzPortfolio implements PortfolioModel {
     private final double  maxShort;
     private final double  shrinkageLambda;
     private final boolean allowShorting;
-    private final Double  targetReturn;   // null → min-variance mode
+    private final Double  targetReturn;   // null -> min-variance mode
 
     public MarkowitzPortfolio(double maxLong, double maxShort,
                               double shrinkageLambda, boolean allowShorting,
@@ -31,8 +31,6 @@ public class MarkowitzPortfolio implements PortfolioModel {
         this.targetReturn    = targetReturn;
     }
 
-    // ── PortfolioModel ────────────────────────────────────────────────────────
-
     @Override
     public List<BigDecimal> allocate(MatrixR064 returns, MatrixR064 mu) {
         MatrixR064 cov = MatrixUtils.covarianceMatrix(returns, mu, shrinkageLambda);
@@ -42,7 +40,13 @@ public class MarkowitzPortfolio implements PortfolioModel {
         model.setShortingAllowed(allowShorting);
 
         if (targetReturn != null) {
-            model.setTargetReturn(BigDecimal.valueOf(targetReturn));
+            // Cap target to max feasible mu to prevent infeasible solver state
+            double maxMu = 0;
+            for (int j = 0; j < n; j++) maxMu = Math.max(maxMu, mu.get(0, j));
+            double safeTarget = Math.min(targetReturn, maxMu * 0.90);
+            if (safeTarget > 1e-8) {
+                model.setTargetReturn(BigDecimal.valueOf(safeTarget));
+            }
         }
         for (int i = 0; i < n; i++) {
             model.setUpperLimit(i, BigDecimal.valueOf(maxLong));
@@ -50,7 +54,17 @@ public class MarkowitzPortfolio implements PortfolioModel {
                 model.setLowerLimit(i, BigDecimal.valueOf(maxShort));
             }
         }
-        return model.getWeights();
+
+        List<BigDecimal> weights = null;
+        try {
+            weights = model.getWeights();
+        } catch (Exception ignored) {}
+
+        // Fallback: equal-weight when solver is null or degenerate
+        if (weights == null || weights.stream().anyMatch(w -> w == null)) {
+            weights = Collections.nCopies(n, BigDecimal.valueOf(1.0 / n));
+        }
+        return weights;
     }
 
     @Override

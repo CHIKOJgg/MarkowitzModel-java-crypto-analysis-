@@ -42,7 +42,7 @@
                             <Button text="None" onAction="#onSelectNoneCoins" styleClass="xs-btn" prefWidth="54"/>
                         </HBox>
                         <Separator/>
-                        <VBox fx:id="coinsPane" spacing="5"/>
+                        <VBox fx:id="coinsPane" spacing="5" styleClass="white-pane"/>
                     </VBox>
                 </TitledPane>
 
@@ -54,7 +54,7 @@
                             <Button text="None" onAction="#onSelectNoneStrat" styleClass="xs-btn" prefWidth="54"/>
                         </HBox>
                         <Separator/>
-                        <VBox fx:id="strategyPane" spacing="5"/>
+                        <VBox fx:id="strategyPane" spacing="5" styleClass="white-pane"/>
                     </VBox>
                 </TitledPane>
 

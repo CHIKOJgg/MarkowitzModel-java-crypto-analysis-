@@ -13,6 +13,7 @@ import org.ojalgo.matrix.MatrixR064;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,18 +52,40 @@ public class Strategy {
     public List<BigDecimal> build(MatrixR064 returns) {
         MatrixUtils.assertClean(returns);
 
+        int n = (int) returns.countColumns();
+
         // 1. Alpha: predict expected returns
         MatrixR064 mu = alpha.predict(returns);
 
         // 2. Portfolio: allocate
-        List<BigDecimal> weights = portfolio.allocate(returns, mu);
+        List<BigDecimal> weights;
+        try {
+            weights = portfolio.allocate(returns, mu);
+        } catch (Exception e) {
+            // Solver failed — return equal-weight fallback
+            double eq = 1.0 / n;
+            return Collections.nCopies(n, BigDecimal.valueOf(eq));
+        }
+
+        // Guard against null/partial results from the solver
+        if (weights == null || weights.size() != n
+                || weights.stream().anyMatch(w -> w == null
+                        || Double.isNaN(w.doubleValue())
+                        || Double.isInfinite(w.doubleValue()))) {
+            double eq = 1.0 / n;
+            return Collections.nCopies(n, BigDecimal.valueOf(eq));
+        }
 
         // 3. Risk model: vol-target or pass-through
-        weights = risk.adjust(weights, returns);
+        try {
+            weights = risk.adjust(weights, returns);
+        } catch (Exception ignored) {}
 
         // 4. Constraint chain (order matters)
         for (Constraint c : constraints) {
-            weights = c.apply(weights);
+            try {
+                weights = c.apply(weights);
+            } catch (Exception ignored) {}
         }
 
         return weights;

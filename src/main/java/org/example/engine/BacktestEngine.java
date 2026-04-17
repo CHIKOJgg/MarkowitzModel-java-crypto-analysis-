@@ -59,11 +59,14 @@ public class BacktestEngine {
         double totalTO   = 0.0;
         int    steps     = 0;
 
-        int totalSteps = (int) returns.countRows() - window - horizon;
+        int totalRows  = (int) returns.countRows();
+        int totalSteps = totalRows - window - horizon;
 
-        for (int t = window; t < returns.countRows() - horizon; t++) {
+        for (int t = window; t <= totalRows - horizon; t++) {
             MatrixR064 train = returns.rows(t - window, t);
-            MatrixR064 test  = returns.rows(t, t + horizon);
+            // Cap the test slice so it never exceeds the matrix height
+            int testEnd = Math.min(t + horizon, totalRows);
+            MatrixR064 test  = returns.rows(t, testEnd);
 
             // 1. Portfolio construction
             List<BigDecimal> weights = strategy.build(train);
