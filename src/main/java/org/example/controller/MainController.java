@@ -19,6 +19,7 @@ import org.example.model.BacktestResult;
 import org.example.model.CoinData;
 import org.example.util.Config;
 import org.example.util.FileExporter;
+import org.example.util.MatrixUtils;
 import org.ojalgo.matrix.MatrixR064;
 
 import java.math.BigDecimal;
@@ -256,7 +257,9 @@ public class MainController implements Initializable {
                     // Single-step weights on the last training window
                     int end   = (int) returns.countRows();
                     int start = Math.max(0, end - win);
-                    lastWeights.put(name, s.build(returns.rows(start, end)));
+                    // BUG FIX: returns.rows(start, end) uses ojAlgo varargs (selects
+                    // two specific rows), not a range. Use MatrixUtils.sliceRows instead.
+                    lastWeights.put(name, s.build(MatrixUtils.sliceRows(returns, start, end)));
                     log(r.summary());
                 }
                 return results;

@@ -36,7 +36,9 @@ public class MarkowitzPortfolio implements PortfolioModel {
         MatrixR064 cov = MatrixUtils.covarianceMatrix(returns, mu, shrinkageLambda);
         int n = (int) returns.countColumns();
 
-        MarkowitzModel model = new MarkowitzModel(cov, mu);
+        // BUG FIX: alpha models emit a [1×n] row vector; ojAlgo MarkowitzModel
+        // expects a [n×1] column vector for expectedExcessReturns.
+        MarkowitzModel model = new MarkowitzModel(cov, mu.transpose());
         model.setShortingAllowed(allowShorting);
 
         if (targetReturn != null) {

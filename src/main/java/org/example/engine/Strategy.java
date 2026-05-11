@@ -85,7 +85,13 @@ public class Strategy {
         for (Constraint c : constraints) {
             try {
                 weights = c.apply(weights);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                // BUG FIX: previously swallowed, returning the pre-constraint weights
+                // even when WeightValidator detected NaN or excess leverage.
+                // Safe fallback: equal weight.
+                double eq = 1.0 / n;
+                return Collections.nCopies(n, BigDecimal.valueOf(eq));
+            }
         }
 
         return weights;
