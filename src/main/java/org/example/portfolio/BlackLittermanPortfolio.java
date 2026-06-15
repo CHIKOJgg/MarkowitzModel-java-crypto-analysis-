@@ -172,11 +172,11 @@ public class BlackLittermanPortfolio implements PortfolioModel {
         }
 
         // Apply constraints AFTER normalization (normalization can violate bounds)
+        double effectiveMaxShort = allowShorting ? maxShort : 0.0;
         List<BigDecimal> constrained = new ArrayList<>(n);
         for (int j = 0; j < n; j++) {
             double w = result.get(j).doubleValue();
-            if (!allowShorting) w = Math.max(0, w);
-            w = Math.max(maxShort, Math.min(maxLong, w));
+            w = Math.max(effectiveMaxShort, Math.min(maxLong, w));
             constrained.add(BigDecimal.valueOf(w));
         }
 

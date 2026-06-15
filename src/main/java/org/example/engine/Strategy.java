@@ -3,7 +3,9 @@ package org.example.engine;
 import org.example.alpha.AlphaModel;
 import org.example.constraint.Constraint;
 import org.example.constraint.LeverageConstraint;
+import org.example.constraint.LongOnlyConstraint;
 import org.example.constraint.MarketNeutralConstraint;
+import org.example.constraint.PortfolioRiskConstraint;
 import org.example.constraint.WeightValidator;
 import org.example.portfolio.PortfolioModel;
 import org.example.risk.PassthroughRisk;
@@ -84,11 +86,8 @@ public class Strategy {
         // 4. Constraint chain (order matters)
         for (Constraint c : constraints) {
             try {
-                weights = c.apply(weights);
+                weights = c.apply(weights, returns);
             } catch (Exception e) {
-                // BUG FIX: previously swallowed, returning the pre-constraint weights
-                // even when WeightValidator detected NaN or excess leverage.
-                // Safe fallback: equal weight.
                 double eq = 1.0 / n;
                 return Collections.nCopies(n, BigDecimal.valueOf(eq));
             }
@@ -145,8 +144,21 @@ public class Strategy {
         public Builder constraint(Constraint c)       { constraints.add(c); return this; }
         public Builder leverage(double max)           { return constraint(new LeverageConstraint(max)); }
         public Builder marketNeutral()                { return constraint(new MarketNeutralConstraint()); }
+        /** Market-neutral when shorting allowed; long-only otherwise. */
+        public Builder shortingPolicy(boolean allowShorting) {
+            return allowShorting ? marketNeutral() : constraint(new LongOnlyConstraint());
+        }
+        /** Long-only clamp only when shorting is disabled (for inherently long strategies). */
+        public Builder longOnlyWhenDisabled(boolean allowShorting) {
+            if (!allowShorting) constraint(new LongOnlyConstraint());
+            return this;
+        }
         public Builder validate(double maxLev)        { return constraint(new WeightValidator(maxLev)); }
         public Builder validate()                     { return validate(10.0); }
+        public Builder portfolioRiskConstraint(double maxVar, boolean useCvar) {
+            if (maxVar > 0) constraint(new PortfolioRiskConstraint(maxVar, useCvar));
+            return this;
+        }
 
         public Strategy build() { return new Strategy(this); }
     }

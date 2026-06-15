@@ -3,7 +3,8 @@ package org.example.model;
 import java.util.List;
 
 /**
- * Immutable walk-forward backtest result with comprehensive risk metrics.
+ * Immutable walk-forward backtest result with comprehensive risk metrics
+ * and regime history.
  */
 public record BacktestResult(
         String       strategyId,
@@ -17,8 +18,20 @@ public record BacktestResult(
         double       cvar95,
         double       avgTurnover,
         double       totalFees,
-        List<Double> benchmarkCurve
+        List<Double> benchmarkCurve,
+        List<String> regimeHistory
 ) {
+    /** Backward-compatible constructor without regime history. */
+    public BacktestResult(String strategyId, List<Double> equityCurve,
+                          double finalEquity, double maxDrawdown,
+                          double sharpe, double sortino, double calmar,
+                          double var95, double cvar95, double avgTurnover,
+                          double totalFees, List<Double> benchmarkCurve) {
+        this(strategyId, equityCurve, finalEquity, maxDrawdown, sharpe,
+             sortino, calmar, var95, cvar95, avgTurnover, totalFees,
+             benchmarkCurve, List.of());
+    }
+
     public List<Double> returnSeries() {
         if (equityCurve.size() < 2) return List.of();
         List<Double> rets = new java.util.ArrayList<>(equityCurve.size() - 1);
@@ -33,5 +46,9 @@ public record BacktestResult(
                 strategyId, finalEquity, maxDrawdown * 100,
                 sharpe, sortino, calmar, var95 * 100, cvar95 * 100,
                 avgTurnover * 100, totalFees);
+    }
+
+    public long regimeCount(String regime) {
+        return regimeHistory.stream().filter(r -> r.equals(regime)).count();
     }
 }

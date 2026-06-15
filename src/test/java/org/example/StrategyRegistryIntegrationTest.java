@@ -41,20 +41,22 @@ class StrategyRegistryIntegrationTest {
                 false,  // useVolScaling
                 0.015,  // targetVol
                 false,  // useEwmaCov
-                0.94    // ewmaLambda
+                0.94,   // ewmaLambda
+                false,  // usePortfolioRiskConstraint
+                0.0     // maxPortfolioVar
         );
     }
 
     @Test
-    void allNamesReturns14Strategies() {
+    void allNamesReturns24Strategies() {
         List<String> names = StrategyRegistry.allNames();
-        assertEquals(14, names.size(), "Should have 14 strategies");
+        assertEquals(24, names.size(), "Should have 24 strategies");
     }
 
     @Test
-    void buildAllReturns14Strategies() {
+    void buildAllReturns24Strategies() {
         Map<String, Strategy> strategies = StrategyRegistry.buildAll(defaultParams());
-        assertEquals(14, strategies.size(), "buildAll should return 14 strategies");
+        assertEquals(24, strategies.size(), "buildAll should return 24 strategies");
     }
 
     @Test
@@ -135,10 +137,10 @@ class StrategyRegistryIntegrationTest {
 
         StrategyRegistry.Params noVol = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.3, true, 0.005, 20,
-                false, 0.015, false, 0.94);
+                false, 0.015, false, 0.94, false, 0.0);
         StrategyRegistry.Params withVol = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.3, true, 0.005, 20,
-                true, 0.015, false, 0.94);
+                true, 0.015, false, 0.94, false, 0.0);
 
         Strategy s1 = StrategyRegistry.buildAll(noVol).get(StrategyRegistry.EWMA_MARKOWITZ);
         Strategy s2 = StrategyRegistry.buildAll(withVol).get(StrategyRegistry.EWMA_MARKOWITZ);
@@ -157,10 +159,10 @@ class StrategyRegistryIntegrationTest {
 
         StrategyRegistry.Params sample = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.3, true, 0.005, 20,
-                false, 0.015, false, 0.94);
+                false, 0.015, false, 0.94, false, 0.0);
         StrategyRegistry.Params ewma = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.3, true, 0.005, 20,
-                false, 0.015, true, 0.94);
+                false, 0.015, true, 0.94, false, 0.0);
 
         Strategy s1 = StrategyRegistry.buildAll(sample).get(StrategyRegistry.EWMA_MARKOWITZ);
         Strategy s2 = StrategyRegistry.buildAll(ewma).get(StrategyRegistry.EWMA_MARKOWITZ);
@@ -176,7 +178,7 @@ class StrategyRegistryIntegrationTest {
     void noShortingStrategiesHaveNoNegativeWeights() {
         StrategyRegistry.Params params = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.3, false, 0.005, 20,
-                false, 0.015, false, 0.94);
+                false, 0.015, false, 0.94, false, 0.0);
 
         Map<String, Strategy> strategies = StrategyRegistry.buildAll(params);
         MatrixR064 returns = makeRandomReturns(60, 5, 42);
@@ -206,7 +208,7 @@ class StrategyRegistryIntegrationTest {
     void leveragedStrategiesRespectCap() {
         StrategyRegistry.Params params = new StrategyRegistry.Params(
                 0.20, -0.15, 0.10, 0.90, 1.5, true, 0.005, 20,
-                false, 0.015, false, 0.94);
+                false, 0.015, false, 0.94, false, 0.0);
 
         Map<String, Strategy> strategies = StrategyRegistry.buildAll(params);
         MatrixR064 returns = makeRandomReturns(60, 5, 42);

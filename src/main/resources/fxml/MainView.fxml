@@ -19,11 +19,17 @@
             <padding><Insets top="14" bottom="14" left="22" right="22"/></padding>
             <Label text="🪙" style="-fx-font-size:26;"/>
             <VBox spacing="2">
-                <Label text="Crypto Portfolio Optimizer  ·  Quant Framework v2"
+                <Label fx:id="titleLabel"
+                       text="Crypto Portfolio Optimizer  ·  Quant Framework v2"
                        styleClass="header-title"/>
-                <Label text="Data → Alpha → Portfolio → Risk → Execution → Backtest"
+                <Label fx:id="pipelineLabel"
+                       text="Data → Alpha → Portfolio → Risk → Execution → Backtest"
                        styleClass="header-sub"/>
             </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <ToggleButton fx:id="langToggle" text="RU"
+                          styleClass="lang-toggle"
+                          onAction="#onToggleLanguage"/>
         </HBox>
     </top>
 
@@ -58,70 +64,124 @@
                     </VBox>
                 </TitledPane>
 
+                <!-- ── 2b. Quick Preset ─────────────────────────────────── -->
+                <TitledPane text="⚡  Quick Preset" expanded="true" styleClass="titled">
+                    <VBox spacing="6">
+                        <Label text="Select a preset to auto-configure all parameters:"
+                               styleClass="param-label" wrapText="true"/>
+                        <ComboBox fx:id="presetCombo" prefWidth="220"
+                                  promptText="Choose preset…"/>
+                        <Label fx:id="presetDescription" text="" styleClass="param-label"
+                               wrapText="true" maxWidth="240"/>
+                    </VBox>
+                </TitledPane>
+
                 <!-- ── 3. Model Parameters ──────────────────────────────── -->
                 <TitledPane text="⚙️  Model Parameters" expanded="true" styleClass="titled">
                     <VBox spacing="7">
+
+                        <Button text="🎯  Auto-Detect Optimal Parameters"
+                                maxWidth="Infinity" styleClass="xs-btn"
+                                onAction="#onAutoDetect"/>
+                        <Separator/>
 
                         <Label text="Data Timeframe:" styleClass="param-label"/>
                         <ComboBox fx:id="timeframeCombo" prefWidth="160"/>
 
                         <Label text="Target Return / day (%):" styleClass="param-label"/>
                         <Slider fx:id="targetReturnSlider" min="0.1" max="2.0" value="0.5"
-                                showTickLabels="true" majorTickUnit="0.5"/>
+                                showTickLabels="true" majorTickUnit="0.5">
+                            <tooltip><Tooltip text="Expected daily return target for mean-variance optimization"/></tooltip>
+                        </Slider>
                         <Label fx:id="targetReturnValue" text="0.50%" styleClass="slider-val"/>
 
                         <Label text="Max Long (%):" styleClass="param-label"/>
                         <Slider fx:id="maxLongSlider" min="5" max="50" value="20"
-                                showTickLabels="true" majorTickUnit="10"/>
+                                showTickLabels="true" majorTickUnit="10">
+                            <tooltip><Tooltip text="Maximum allocation per asset (long)"/></tooltip>
+                        </Slider>
                         <Label fx:id="maxLongValue" text="20%" styleClass="slider-val"/>
 
                         <Label text="Max Short (%):" styleClass="param-label"/>
                         <Slider fx:id="maxShortSlider" min="0" max="30" value="15"
-                                showTickLabels="true" majorTickUnit="10"/>
+                                showTickLabels="true" majorTickUnit="10">
+                            <tooltip><Tooltip text="Maximum allocation per asset (short, negative = short)"/></tooltip>
+                        </Slider>
                         <Label fx:id="maxShortValue" text="-15%" styleClass="slider-val"/>
 
-                        <CheckBox fx:id="allowShortingCheck" text="Allow Shorting" selected="true"/>
+                        <CheckBox fx:id="allowShortingCheck" text="Allow Shorting" selected="true">
+                            <tooltip><Tooltip text="Allow negative weights (short positions)"/></tooltip>
+                        </CheckBox>
 
                         <Separator/>
 
                         <Label text="EWMA α:" styleClass="param-label"/>
                         <Slider fx:id="alphaSlider" min="0.01" max="0.5" value="0.1"
-                                showTickLabels="true" majorTickUnit="0.1"/>
+                                showTickLabels="true" majorTickUnit="0.1">
+                            <tooltip><Tooltip text="EWMA smoothing factor — higher = more weight on recent data"/></tooltip>
+                        </Slider>
                         <Label fx:id="alphaValue" text="0.10" styleClass="slider-val"/>
 
                         <Label text="Shrinkage λ (Ledoit-Wolf):" styleClass="param-label"/>
                         <Slider fx:id="shrinkageSlider" min="0.1" max="1.0" value="0.9"
-                                showTickLabels="true" majorTickUnit="0.2"/>
+                                showTickLabels="true" majorTickUnit="0.2">
+                            <tooltip><Tooltip text="Ledoit-Wolf shrinkage intensity — 1 = full shrinkage to uniform"/></tooltip>
+                        </Slider>
                         <Label fx:id="shrinkageValue" text="0.90" styleClass="slider-val"/>
 
-                        <CheckBox fx:id="ewmaCovCheck" text="EWMA Covariance (dynamic)"/>
+                        <CheckBox fx:id="ewmaCovCheck" text="EWMA Covariance (dynamic)">
+                            <tooltip><Tooltip text="Use EWMA for covariance matrix estimation (dynamic)"/></tooltip>
+                        </CheckBox>
                         <Label text="EWMA λ (decay):" styleClass="param-label"/>
                         <Slider fx:id="ewmaLambdaSlider" min="0.8" max="0.99" value="0.94"
-                                showTickLabels="true" majorTickUnit="0.05" disable="true"/>
+                                showTickLabels="true" majorTickUnit="0.05" disable="true">
+                            <tooltip><Tooltip text="EWMA decay factor for covariance — higher = slower decay"/></tooltip>
+                        </Slider>
                         <Label fx:id="ewmaLambdaValue" text="0.94" styleClass="slider-val" disable="true"/>
 
                         <Separator/>
 
                         <Label text="Risk-Free Rate (annual %):" styleClass="param-label"/>
                         <Slider fx:id="riskFreeRateSlider" min="0.0" max="10.0" value="4.0"
-                                showTickLabels="true" majorTickUnit="2.0"/>
+                                showTickLabels="true" majorTickUnit="2.0">
+                            <tooltip><Tooltip text="Annual risk-free rate used in Sharpe and Sortino calculations"/></tooltip>
+                        </Slider>
                         <Label fx:id="riskFreeRateValue" text="4.0%" styleClass="slider-val"/>
 
                         <Label text="Max Leverage:" styleClass="param-label"/>
                         <Slider fx:id="leverageSlider" min="1.0" max="3.0" value="1.3"
-                                showTickLabels="true" majorTickUnit="0.5"/>
+                                showTickLabels="true" majorTickUnit="0.5">
+                            <tooltip><Tooltip text="Maximum gross leverage (sum of absolute weights)"/></tooltip>
+                        </Slider>
                         <Label fx:id="leverageValue" text="1.30" styleClass="slider-val"/>
 
                         <Label text="Momentum Look-back (days):" styleClass="param-label"/>
                         <Spinner fx:id="momentumLookback" min="5" max="60" initialValue="20"
-                                 editable="true" prefWidth="90"/>
+                                 editable="true" prefWidth="90">
+                            <tooltip><Tooltip text="Lookback period for momentum calculation (days)"/></tooltip>
+                        </Spinner>
 
                         <Separator/>
-                        <CheckBox fx:id="volScalingCheck" text="Volatility Scaling (Risk Model)"/>
+                        <CheckBox fx:id="volScalingCheck" text="Volatility Scaling (Risk Model)">
+                            <tooltip><Tooltip text="Scale portfolio to target volatility"/></tooltip>
+                        </CheckBox>
                         <Label text="Target Vol / day (%):" styleClass="param-label"/>
                         <Slider fx:id="targetVolSlider" min="0.5" max="5.0" value="1.5"
-                                showTickLabels="true" majorTickUnit="1" disable="true"/>
+                                showTickLabels="true" majorTickUnit="1" disable="true">
+                            <tooltip><Tooltip text="Target daily portfolio volatility"/></tooltip>
+                        </Slider>
                         <Label fx:id="targetVolValue" text="1.5%" styleClass="slider-val" disable="true"/>
+
+                        <Separator/>
+                        <CheckBox fx:id="portfolioVaRCheck" text="Portfolio VaR Constraint">
+                            <tooltip><Tooltip text="Limit portfolio VaR(95%) by scaling back high-risk allocations"/></tooltip>
+                        </CheckBox>
+                        <Label text="Max VaR (daily %):" styleClass="param-label"/>
+                        <Slider fx:id="maxVarSlider" min="0.5" max="10.0" value="3.0"
+                                showTickLabels="true" majorTickUnit="2" disable="true">
+                            <tooltip><Tooltip text="Maximum daily VaR(95%) at the portfolio level (0 = disabled)"/></tooltip>
+                        </Slider>
+                        <Label fx:id="maxVarValue" text="3.0%" styleClass="slider-val" disable="true"/>
                     </VBox>
                 </TitledPane>
 
@@ -130,21 +190,35 @@
                     <VBox spacing="7">
                         <Label text="Training Window (days):" styleClass="param-label"/>
                         <Spinner fx:id="windowSpinner" min="20" max="200"
-                                 initialValue="60" editable="true" prefWidth="100"/>
+                                 initialValue="60" editable="true" prefWidth="100">
+                            <tooltip><Tooltip text="Training window size (days of data used for each rebalance)"/></tooltip>
+                        </Spinner>
 
                         <Label text="Prediction Horizon (days):" styleClass="param-label"/>
                         <Spinner fx:id="horizonSpinner" min="1" max="30"
-                                 initialValue="7" editable="true" prefWidth="100"/>
+                                 initialValue="7" editable="true" prefWidth="100">
+                            <tooltip><Tooltip text="Number of days to hold each portfolio before rebalancing"/></tooltip>
+                        </Spinner>
 
                         <Label text="Fee Rate (% one-way):" styleClass="param-label"/>
                         <Slider fx:id="feeRateSlider" min="0" max="1.0" value="0.1"
-                                showTickLabels="true" majorTickUnit="0.25"/>
+                                showTickLabels="true" majorTickUnit="0.25">
+                            <tooltip><Tooltip text="One-way transaction fee rate"/></tooltip>
+                        </Slider>
                         <Label fx:id="feeRateValue" text="0.10%" styleClass="slider-val"/>
 
                         <Label text="Max Turnover (0 = disabled):" styleClass="param-label"/>
                         <Slider fx:id="turnoverSlider" min="0" max="1.0" value="0"
-                                showTickLabels="true" majorTickUnit="0.25"/>
+                                showTickLabels="true" majorTickUnit="0.25">
+                            <tooltip><Tooltip text="Maximum portfolio turnover per rebalance (0 = disabled)"/></tooltip>
+                        </Slider>
                         <Label fx:id="turnoverValue" text="Disabled" styleClass="slider-val"/>
+
+                        <Label text="Rebalance Frequency (days):" styleClass="param-label"/>
+                        <Spinner fx:id="rebalanceSpinner" min="1" max="60"
+                                 initialValue="1" editable="true" prefWidth="90">
+                            <tooltip><Tooltip text="How often to rebalance: 1 = every day, 5 = weekly, 21 = monthly"/></tooltip>
+                        </Spinner>
 
                         <CheckBox fx:id="zeroCostCheck" text="Zero Cost (Gross PnL baseline)"/>
                     </VBox>
@@ -164,12 +238,21 @@
                     <Button fx:id="fetchBtn" text="⬇  1. Fetch Market Data"
                             maxWidth="Infinity" styleClass="secondary-btn"
                             onAction="#onFetchData"/>
+                    <Button text="📂  Load CSV Data"
+                            maxWidth="Infinity" styleClass="secondary-btn"
+                            onAction="#onLoadCsv"/>
                     <Button fx:id="runBtn"   text="▶  2. Run All Strategies"
                             maxWidth="Infinity" styleClass="primary-btn"
                             onAction="#onRunStrategies"/>
                     <Button fx:id="exportBtn" text="💾  Export Results"
                             maxWidth="Infinity" styleClass="secondary-btn"
                             onAction="#onExport"/>
+                    <Button text="📄  HTML Report"
+                            maxWidth="Infinity" styleClass="secondary-btn"
+                            onAction="#onExportHtml"/>
+                    <Button text="💿  Save State"
+                            maxWidth="Infinity" styleClass="secondary-btn"
+                            onAction="#onSaveState"/>
                 </VBox>
 
             </VBox>
@@ -226,11 +309,17 @@
             <!-- ── Forecast tab ─────────────────────────────────────────────── -->
             <Tab text="🔮  Forecast">
                 <VBox spacing="0">
-                    <LineChart fx:id="forecastChart" title="Return Forecast (7-day horizon)"
+                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="tab-toolbar">
+                        <padding><Insets top="6" bottom="6" left="12" right="12"/></padding>
+                        <Label text="Forecast Horizon:" styleClass="param-label"/>
+                        <ComboBox fx:id="forecastHorizonCombo" prefWidth="120"
+                                  onAction="#onForecastHorizonChanged"/>
+                    </HBox>
+                    <LineChart fx:id="forecastChart" title="Return Forecast"
                                animated="false" VBox.vgrow="ALWAYS" createSymbols="false"
                                prefHeight="420">
                         <xAxis><NumberAxis label="Days Ahead"/></xAxis>
-                        <yAxis><NumberAxis label="Forecasted Return"/></yAxis>
+                        <yAxis><NumberAxis label="Cumulative Return (%)"/></yAxis>
                     </LineChart>
 
                     <Label text="Asset Forecast Summary"
@@ -249,6 +338,107 @@
                     <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true">
                         <GridPane fx:id="heatmapGrid" hgap="2" vgap="2"/>
                     </ScrollPane>
+                </VBox>
+            </Tab>
+
+            <!-- ── Recommendations tab ────────────────────────────────────── -->
+            <Tab text="💡  Recommendations">
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                            styleClass="content-scroll">
+                    <VBox spacing="12">
+                        <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
+                        <Label text="Portfolio Recommendations &amp; Strategy Advice"
+                               styleClass="section-title"/>
+                        <Label text="Based on your forecast analysis and backtest results, here is a summary recommendation."
+                               styleClass="param-label" wrapText="true" maxWidth="800"/>
+                        <Separator/>
+                        <HBox spacing="16">
+                            <VBox fx:id="recommendationCards" spacing="12"
+                                  prefWidth="480" minWidth="400"/>
+                            <VBox spacing="12" prefWidth="320" minWidth="280">
+                                <Label text="Selected Strategy Summary" styleClass="section-title"/>
+                                <VBox fx:id="strategySummaryBox" spacing="8"/>
+                                <Separator/>
+                                <Label text="Warnings &amp; Considerations" styleClass="section-title"/>
+                                <VBox fx:id="warningsBox" spacing="6"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <!-- ── Stress Test tab ────────────────────────────────────────── -->
+            <Tab text="🔬  Stress Test">
+                <VBox spacing="8">
+                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Scenario:" styleClass="param-label"/>
+                        <ComboBox fx:id="scenarioCombo" prefWidth="200"/>
+                        <Button fx:id="runStressBtn" text="Run Stress Test"
+                                onAction="#onRunStressTest" styleClass="primary-btn"/>
+                    </HBox>
+                    <VBox fx:id="stressResultsBox" spacing="8" VBox.vgrow="ALWAYS"/>
+                    <TableView fx:id="stressTable" prefHeight="200"/>
+                </VBox>
+            </Tab>
+
+            <!-- ── Monte Carlo tab ────────────────────────────────────────── -->
+            <Tab text="🎲  Monte Carlo">
+                <VBox spacing="8">
+                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="Paths:" styleClass="param-label"/>
+                        <Spinner fx:id="mcPathsSpinner" min="100" max="10000" initialValue="1000"
+                                 editable="true" prefWidth="90"/>
+                        <Label text="Horizon:" styleClass="param-label"/>
+                        <Spinner fx:id="mcHorizonSpinner" min="1" max="365" initialValue="30"
+                                 editable="true" prefWidth="90"/>
+                        <Label text="Drift:" styleClass="param-label"/>
+                        <Slider fx:id="mcDriftSlider" min="-0.005" max="0.005" value="0.001"
+                                showTickLabels="true" majorTickUnit="0.002" prefWidth="120"/>
+                        <Label text="Vol:" styleClass="param-label"/>
+                        <Slider fx:id="mcVolSlider" min="0.01" max="0.1" value="0.03"
+                                showTickLabels="true" majorTickUnit="0.02" prefWidth="120"/>
+                        <Button fx:id="runMcBtn" text="Simulate"
+                                onAction="#onRunMonteCarlo" styleClass="primary-btn"/>
+                    </HBox>
+                    <LineChart fx:id="mcChart" title="Monte Carlo Fan Chart"
+                               animated="false" createSymbols="false" prefHeight="350"
+                               VBox.vgrow="ALWAYS">
+                        <xAxis><NumberAxis label="Day"/></xAxis>
+                        <yAxis><NumberAxis label="Value"/></yAxis>
+                    </LineChart>
+                    <GridPane fx:id="mcResultsGrid" hgap="14" vgap="8"/>
+                </VBox>
+            </Tab>
+
+            <!-- ── Attribution tab ─────────────────────────────────────────── -->
+            <Tab text="📊  Attribution">
+                <VBox spacing="8">
+                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
+                    <GridPane fx:id="attributionGrid" hgap="14" vgap="8"/>
+                    <Label text="Brinson Attribution" styleClass="section-title"
+                           style="-fx-padding: 6 0 4 0;"/>
+                    <TableView fx:id="attributionTable" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </Tab>
+
+            <!-- ── Sensitivity tab ─────────────────────────────────────────── -->
+            <Tab text="🔥  Sensitivity">
+                <VBox spacing="8">
+                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Parameter:" styleClass="param-label"/>
+                        <ComboBox fx:id="sensitivityParamCombo" prefWidth="180"/>
+                        <Button fx:id="runSensitivityBtn" text="Run"
+                                onAction="#onRunSensitivity" styleClass="primary-btn"/>
+                    </HBox>
+                    <LineChart fx:id="sensitivityChart" title="Parameter Sensitivity"
+                               animated="false" createSymbols="false" prefHeight="350"
+                               VBox.vgrow="ALWAYS">
+                        <xAxis><NumberAxis label="Parameter Value"/></xAxis>
+                        <yAxis><NumberAxis label="Sharpe Ratio"/></yAxis>
+                    </LineChart>
                 </VBox>
             </Tab>
 

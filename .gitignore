@@ -35,5 +35,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Generated output files ###
+portfolio_results_*.csv
+*.html
+
 ### Mac OS ###
 .DS_Store

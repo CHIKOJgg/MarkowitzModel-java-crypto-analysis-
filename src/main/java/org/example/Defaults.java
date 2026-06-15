@@ -83,6 +83,9 @@ public final class Defaults {
     /** Turnover constraint: 0 = disabled. */
     public static final double MAX_TURNOVER = 0.0;
 
+    /** Portfolio risk constraint: VaR(95%) limit (daily, 0 = disabled). */
+    public static final double MAX_PORTFOLIO_VAR = 0.0;
+
     // ── Risk Model ────────────────────────────────────────────────────────────
     /** Default target daily volatility for vol scaling. */
     public static final double TARGET_VOL = 0.015;
