@@ -4,458 +4,658 @@
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.controller.MainController"
-            stylesheets="@../css/dark.css"
-            prefWidth="1280" prefHeight="800">
+            stylesheets="@../css/styles.css"
+            styleClass="root">
 
-    <!-- ══════════════════  TOP – Header  ══════════════════════════════════ -->
+    <!-- ======================================================================
+         TOP APP BAR
+         ====================================================================== -->
     <top>
-        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="16">
-            <padding><Insets top="14" bottom="14" left="22" right="22"/></padding>
-            <Label text="🪙" style="-fx-font-size:26;"/>
-            <VBox spacing="2">
-                <Label fx:id="titleLabel"
-                       text="Crypto Portfolio Optimizer  ·  Quant Framework v2"
-                       styleClass="header-title"/>
-                <Label fx:id="pipelineLabel"
-                       text="Data → Alpha → Portfolio → Risk → Execution → Backtest"
-                       styleClass="header-sub"/>
-            </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
-            <ToggleButton fx:id="langToggle" text="RU"
-                          styleClass="lang-toggle"
-                          onAction="#onToggleLanguage"/>
+        <HBox styleClass="top-app-bar">
+            <children>
+                <VBox spacing="2">
+                    <children>
+                        <Label fx:id="titleLabel" text="Crypto Portfolio Optimizer" styleClass="app-title"/>
+                        <Label fx:id="pipelineLabel" text="Data → Strategies → Backtest → Forecast → Recommendations" styleClass="app-subtitle"/>
+                    </children>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ToggleButton fx:id="langToggle" text="RU" styleClass="toggle-button" onAction="#onToggleLanguage"/>
+            </children>
         </HBox>
     </top>
 
-    <!-- ══════════════════  LEFT – Control panel  ═══════════════════════════ -->
+    <!-- ======================================================================
+         LEFT SIDEBAR — DATA, PARAMETERS, STRATEGIES, BACKTEST SETTINGS
+         ====================================================================== -->
     <left>
-        <ScrollPane fitToWidth="true" prefWidth="285" styleClass="sidebar-scroll"
-                    hbarPolicy="NEVER">
-            <VBox spacing="10" styleClass="sidebar">
-                <padding><Insets top="10" bottom="14" left="10" right="10"/></padding>
+        <ScrollPane fitToWidth="true" styleClass="sidebar-scroll">
+            <content>
+                <VBox styleClass="sidebar">
+                    <children>
 
-                <!-- ── 1. Coin Universe ──────────────────────────────────── -->
-                <TitledPane text="📊  Coin Universe" expanded="true" styleClass="titled">
-                    <VBox spacing="6">
-                        <HBox spacing="6">
-                            <Button text="All"  onAction="#onSelectAllCoins"  styleClass="xs-btn" prefWidth="54"/>
-                            <Button text="None" onAction="#onSelectNoneCoins" styleClass="xs-btn" prefWidth="54"/>
-                        </HBox>
-                        <Separator/>
-                        <VBox fx:id="coinsPane" spacing="5" styleClass="white-pane"/>
-                    </VBox>
-                </TitledPane>
+                        <!-- ── Data source ─────────────────────────────────── -->
+                        <Label text="Data Source" styleClass="section-title"/>
+                        <VBox styleClass="surface-card">
+                            <children>
+                                <HBox spacing="8">
+                                    <children>
+                                        <Button text="Load CSV…" onAction="#onLoadCsv" styleClass="btn-outlined, btn-fullwidth" HBox.hgrow="ALWAYS"/>
+                                    </children>
+                                </HBox>
+                                <Label text="Timeframe" styleClass="param-label"/>
+                                <ComboBox fx:id="timeframeCombo" maxWidth="9999"/>
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Button fx:id="fetchBtn" text="Fetch Market Data" onAction="#onFetchData" styleClass="btn-filled, btn-fullwidth" HBox.hgrow="ALWAYS"/>
+                                    </children>
+                                </HBox>
+                                <Button text="Auto-Detect Parameters" onAction="#onAutoDetect" styleClass="btn-tonal, btn-fullwidth"/>
+                            </children>
+                        </VBox>
 
-                <!-- ── 2. Strategies to Test ────────────────────────────── -->
-                <TitledPane text="🧪  Strategies" expanded="true" styleClass="titled">
-                    <VBox spacing="6">
-                        <HBox spacing="6">
-                            <Button text="All"  onAction="#onSelectAllStrat"  styleClass="xs-btn" prefWidth="54"/>
-                            <Button text="None" onAction="#onSelectNoneStrat" styleClass="xs-btn" prefWidth="54"/>
-                        </HBox>
-                        <Separator/>
-                        <VBox fx:id="strategyPane" spacing="5" styleClass="white-pane"/>
-                    </VBox>
-                </TitledPane>
+                        <!-- ── Coin universe ───────────────────────────────── -->
+                        <Label text="Coin Universe" styleClass="section-title"/>
+                        <VBox styleClass="surface-card">
+                            <children>
+                                <HBox spacing="8">
+                                    <children>
+                                        <Button text="Select All" onAction="#onSelectAllCoins" styleClass="btn-text"/>
+                                        <Button text="Select None" onAction="#onSelectNoneCoins" styleClass="btn-text"/>
+                                    </children>
+                                </HBox>
+                                <VBox fx:id="coinsPane" styleClass="checkbox-list"/>
+                            </children>
+                        </VBox>
 
-                <!-- ── 2b. Quick Preset ─────────────────────────────────── -->
-                <TitledPane text="⚡  Quick Preset" expanded="true" styleClass="titled">
-                    <VBox spacing="6">
-                        <Label text="Select a preset to auto-configure all parameters:"
-                               styleClass="param-label" wrapText="true"/>
-                        <ComboBox fx:id="presetCombo" prefWidth="220"
-                                  promptText="Choose preset…"/>
-                        <Label fx:id="presetDescription" text="" styleClass="param-label"
-                               wrapText="true" maxWidth="240"/>
-                    </VBox>
-                </TitledPane>
+                        <!-- ── API key ─────────────────────────────────────── -->
+                        <TitledPane text="CoinGecko API Key" expanded="false">
+                            <content>
+                                <VBox spacing="8" styleClass="surface-card">
+                                    <children>
+                                        <PasswordField fx:id="apiKeyField" promptText="Enter API key (optional)"/>
+                                        <Button text="Save Key" onAction="#onSaveApiKey" styleClass="btn-outlined, btn-fullwidth"/>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
 
-                <!-- ── 3. Model Parameters ──────────────────────────────── -->
-                <TitledPane text="⚙️  Model Parameters" expanded="true" styleClass="titled">
-                    <VBox spacing="7">
+                        <!-- ── Strategy preset ─────────────────────────────── -->
+                        <TitledPane text="Strategy Preset" expanded="true">
+                            <content>
+                                <VBox spacing="8" styleClass="surface-card">
+                                    <children>
+                                        <ComboBox fx:id="presetCombo" maxWidth="9999"/>
+                                        <Label fx:id="presetDescription" text="" wrapText="true" styleClass="hint-text"/>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
 
-                        <Button text="🎯  Auto-Detect Optimal Parameters"
-                                maxWidth="Infinity" styleClass="xs-btn"
-                                onAction="#onAutoDetect"/>
-                        <Separator/>
+                        <!-- ── Model parameters ────────────────────────────── -->
+                        <TitledPane text="Model Parameters" expanded="true">
+                            <content>
+                                <VBox spacing="6" styleClass="surface-card">
+                                    <children>
 
-                        <Label text="Data Timeframe:" styleClass="param-label"/>
-                        <ComboBox fx:id="timeframeCombo" prefWidth="160"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Target Return" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="targetReturnValue" text="0.50%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="targetReturnSlider" min="0" max="5" value="0.5" majorTickUnit="1" blockIncrement="0.1"/>
 
-                        <Label text="Target Return / day (%):" styleClass="param-label"/>
-                        <Slider fx:id="targetReturnSlider" min="0.1" max="2.0" value="0.5"
-                                showTickLabels="true" majorTickUnit="0.5">
-                            <tooltip><Tooltip text="Expected daily return target for mean-variance optimization"/></tooltip>
-                        </Slider>
-                        <Label fx:id="targetReturnValue" text="0.50%" styleClass="slider-val"/>
+                                        <Separator/>
 
-                        <Label text="Max Long (%):" styleClass="param-label"/>
-                        <Slider fx:id="maxLongSlider" min="5" max="50" value="20"
-                                showTickLabels="true" majorTickUnit="10">
-                            <tooltip><Tooltip text="Maximum allocation per asset (long)"/></tooltip>
-                        </Slider>
-                        <Label fx:id="maxLongValue" text="20%" styleClass="slider-val"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Max Long Weight" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="maxLongValue" text="20%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="maxLongSlider" min="0" max="100" value="20" majorTickUnit="25" blockIncrement="1"/>
 
-                        <Label text="Max Short (%):" styleClass="param-label"/>
-                        <Slider fx:id="maxShortSlider" min="0" max="30" value="15"
-                                showTickLabels="true" majorTickUnit="10">
-                            <tooltip><Tooltip text="Maximum allocation per asset (short, negative = short)"/></tooltip>
-                        </Slider>
-                        <Label fx:id="maxShortValue" text="-15%" styleClass="slider-val"/>
+                                        <Separator/>
 
-                        <CheckBox fx:id="allowShortingCheck" text="Allow Shorting" selected="true">
-                            <tooltip><Tooltip text="Allow negative weights (short positions)"/></tooltip>
-                        </CheckBox>
+                                        <CheckBox fx:id="allowShortingCheck" text="Allow Shorting"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Max Short Weight" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="maxShortValue" text="-15%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="maxShortSlider" min="0" max="100" value="15" majorTickUnit="25" blockIncrement="1"/>
 
-                        <Separator/>
+                                        <Separator/>
 
-                        <Label text="EWMA α:" styleClass="param-label"/>
-                        <Slider fx:id="alphaSlider" min="0.01" max="0.5" value="0.1"
-                                showTickLabels="true" majorTickUnit="0.1">
-                            <tooltip><Tooltip text="EWMA smoothing factor — higher = more weight on recent data"/></tooltip>
-                        </Slider>
-                        <Label fx:id="alphaValue" text="0.10" styleClass="slider-val"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Alpha (EWMA)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="alphaValue" text="0.10" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="alphaSlider" min="0.01" max="1" value="0.10" majorTickUnit="0.25" blockIncrement="0.01"/>
 
-                        <Label text="Shrinkage λ (Ledoit-Wolf):" styleClass="param-label"/>
-                        <Slider fx:id="shrinkageSlider" min="0.1" max="1.0" value="0.9"
-                                showTickLabels="true" majorTickUnit="0.2">
-                            <tooltip><Tooltip text="Ledoit-Wolf shrinkage intensity — 1 = full shrinkage to uniform"/></tooltip>
-                        </Slider>
-                        <Label fx:id="shrinkageValue" text="0.90" styleClass="slider-val"/>
+                                        <Separator/>
 
-                        <CheckBox fx:id="ewmaCovCheck" text="EWMA Covariance (dynamic)">
-                            <tooltip><Tooltip text="Use EWMA for covariance matrix estimation (dynamic)"/></tooltip>
-                        </CheckBox>
-                        <Label text="EWMA λ (decay):" styleClass="param-label"/>
-                        <Slider fx:id="ewmaLambdaSlider" min="0.8" max="0.99" value="0.94"
-                                showTickLabels="true" majorTickUnit="0.05" disable="true">
-                            <tooltip><Tooltip text="EWMA decay factor for covariance — higher = slower decay"/></tooltip>
-                        </Slider>
-                        <Label fx:id="ewmaLambdaValue" text="0.94" styleClass="slider-val" disable="true"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Shrinkage (Ledoit-Wolf)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="shrinkageValue" text="0.90" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="shrinkageSlider" min="0" max="1" value="0.90" majorTickUnit="0.25" blockIncrement="0.01"/>
 
-                        <Separator/>
+                                        <Separator/>
 
-                        <Label text="Risk-Free Rate (annual %):" styleClass="param-label"/>
-                        <Slider fx:id="riskFreeRateSlider" min="0.0" max="10.0" value="4.0"
-                                showTickLabels="true" majorTickUnit="2.0">
-                            <tooltip><Tooltip text="Annual risk-free rate used in Sharpe and Sortino calculations"/></tooltip>
-                        </Slider>
-                        <Label fx:id="riskFreeRateValue" text="4.0%" styleClass="slider-val"/>
+                                        <CheckBox fx:id="ewmaCovCheck" text="Use EWMA Covariance"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="EWMA Lambda (Cov)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="ewmaLambdaValue" text="0.94" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="ewmaLambdaSlider" min="0.5" max="0.999" value="0.94" majorTickUnit="0.1" blockIncrement="0.01"/>
 
-                        <Label text="Max Leverage:" styleClass="param-label"/>
-                        <Slider fx:id="leverageSlider" min="1.0" max="3.0" value="1.3"
-                                showTickLabels="true" majorTickUnit="0.5">
-                            <tooltip><Tooltip text="Maximum gross leverage (sum of absolute weights)"/></tooltip>
-                        </Slider>
-                        <Label fx:id="leverageValue" text="1.30" styleClass="slider-val"/>
+                                        <Separator/>
 
-                        <Label text="Momentum Look-back (days):" styleClass="param-label"/>
-                        <Spinner fx:id="momentumLookback" min="5" max="60" initialValue="20"
-                                 editable="true" prefWidth="90">
-                            <tooltip><Tooltip text="Lookback period for momentum calculation (days)"/></tooltip>
-                        </Spinner>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Risk-Free Rate" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="riskFreeRateValue" text="4.0%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="riskFreeRateSlider" min="0" max="10" value="4.0" majorTickUnit="2" blockIncrement="0.1"/>
 
-                        <Separator/>
-                        <CheckBox fx:id="volScalingCheck" text="Volatility Scaling (Risk Model)">
-                            <tooltip><Tooltip text="Scale portfolio to target volatility"/></tooltip>
-                        </CheckBox>
-                        <Label text="Target Vol / day (%):" styleClass="param-label"/>
-                        <Slider fx:id="targetVolSlider" min="0.5" max="5.0" value="1.5"
-                                showTickLabels="true" majorTickUnit="1" disable="true">
-                            <tooltip><Tooltip text="Target daily portfolio volatility"/></tooltip>
-                        </Slider>
-                        <Label fx:id="targetVolValue" text="1.5%" styleClass="slider-val" disable="true"/>
+                                        <Separator/>
 
-                        <Separator/>
-                        <CheckBox fx:id="portfolioVaRCheck" text="Portfolio VaR Constraint">
-                            <tooltip><Tooltip text="Limit portfolio VaR(95%) by scaling back high-risk allocations"/></tooltip>
-                        </CheckBox>
-                        <Label text="Max VaR (daily %):" styleClass="param-label"/>
-                        <Slider fx:id="maxVarSlider" min="0.5" max="10.0" value="3.0"
-                                showTickLabels="true" majorTickUnit="2" disable="true">
-                            <tooltip><Tooltip text="Maximum daily VaR(95%) at the portfolio level (0 = disabled)"/></tooltip>
-                        </Slider>
-                        <Label fx:id="maxVarValue" text="3.0%" styleClass="slider-val" disable="true"/>
-                    </VBox>
-                </TitledPane>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Leverage" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="leverageValue" text="1.30" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="leverageSlider" min="1" max="3" value="1.30" majorTickUnit="0.5" blockIncrement="0.05"/>
 
-                <!-- ── 4. Backtest Settings ──────────────────────────────── -->
-                <TitledPane text="🔄  Backtest Settings" expanded="false" styleClass="titled">
-                    <VBox spacing="7">
-                        <Label text="Training Window (days):" styleClass="param-label"/>
-                        <Spinner fx:id="windowSpinner" min="20" max="200"
-                                 initialValue="60" editable="true" prefWidth="100">
-                            <tooltip><Tooltip text="Training window size (days of data used for each rebalance)"/></tooltip>
-                        </Spinner>
+                                        <Separator/>
 
-                        <Label text="Prediction Horizon (days):" styleClass="param-label"/>
-                        <Spinner fx:id="horizonSpinner" min="1" max="30"
-                                 initialValue="7" editable="true" prefWidth="100">
-                            <tooltip><Tooltip text="Number of days to hold each portfolio before rebalancing"/></tooltip>
-                        </Spinner>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Momentum Lookback (days)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Spinner fx:id="momentumLookback" editable="true" prefWidth="90">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="200" initialValue="20"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </HBox>
 
-                        <Label text="Fee Rate (% one-way):" styleClass="param-label"/>
-                        <Slider fx:id="feeRateSlider" min="0" max="1.0" value="0.1"
-                                showTickLabels="true" majorTickUnit="0.25">
-                            <tooltip><Tooltip text="One-way transaction fee rate"/></tooltip>
-                        </Slider>
-                        <Label fx:id="feeRateValue" text="0.10%" styleClass="slider-val"/>
+                                        <Separator/>
 
-                        <Label text="Max Turnover (0 = disabled):" styleClass="param-label"/>
-                        <Slider fx:id="turnoverSlider" min="0" max="1.0" value="0"
-                                showTickLabels="true" majorTickUnit="0.25">
-                            <tooltip><Tooltip text="Maximum portfolio turnover per rebalance (0 = disabled)"/></tooltip>
-                        </Slider>
-                        <Label fx:id="turnoverValue" text="Disabled" styleClass="slider-val"/>
+                                        <CheckBox fx:id="volScalingCheck" text="Target Volatility Scaling"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Target Volatility" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="targetVolValue" text="1.5%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="targetVolSlider" min="0" max="5" value="1.5" majorTickUnit="1" blockIncrement="0.1"/>
 
-                        <Label text="Rebalance Frequency (days):" styleClass="param-label"/>
-                        <Spinner fx:id="rebalanceSpinner" min="1" max="60"
-                                 initialValue="1" editable="true" prefWidth="90">
-                            <tooltip><Tooltip text="How often to rebalance: 1 = every day, 5 = weekly, 21 = monthly"/></tooltip>
-                        </Spinner>
+                                        <Separator/>
 
-                        <CheckBox fx:id="zeroCostCheck" text="Zero Cost (Gross PnL baseline)"/>
-                    </VBox>
-                </TitledPane>
+                                        <CheckBox fx:id="portfolioVaRCheck" text="Portfolio VaR Constraint"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Max Portfolio VaR (95%)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="maxVarValue" text="5.0%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="maxVarSlider" min="0" max="10" value="5.0" majorTickUnit="2" blockIncrement="0.1"/>
 
-                <!-- ── 5. API Key ────────────────────────────────────────── -->
-                <TitledPane text="🔑  CoinGecko API Key" expanded="false" styleClass="titled">
-                    <VBox spacing="6">
-                        <PasswordField fx:id="apiKeyField" promptText="CG-xxxx…"/>
-                        <Button text="Save" onAction="#onSaveApiKey"
-                                maxWidth="Infinity" styleClass="xs-btn"/>
-                    </VBox>
-                </TitledPane>
+                                        <Separator/>
 
-                <!-- ── Action buttons ────────────────────────────────────── -->
-                <VBox spacing="8">
-                    <Button fx:id="fetchBtn" text="⬇  1. Fetch Market Data"
-                            maxWidth="Infinity" styleClass="secondary-btn"
-                            onAction="#onFetchData"/>
-                    <Button text="📂  Load CSV Data"
-                            maxWidth="Infinity" styleClass="secondary-btn"
-                            onAction="#onLoadCsv"/>
-                    <Button fx:id="runBtn"   text="▶  2. Run All Strategies"
-                            maxWidth="Infinity" styleClass="primary-btn"
-                            onAction="#onRunStrategies"/>
-                    <Button fx:id="exportBtn" text="💾  Export Results"
-                            maxWidth="Infinity" styleClass="secondary-btn"
-                            onAction="#onExport"/>
-                    <Button text="📄  HTML Report"
-                            maxWidth="Infinity" styleClass="secondary-btn"
-                            onAction="#onExportHtml"/>
-                    <Button text="💿  Save State"
-                            maxWidth="Infinity" styleClass="secondary-btn"
-                            onAction="#onSaveState"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Rebalance Frequency (days)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Spinner fx:id="rebalanceSpinner" editable="true" prefWidth="90">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="30" initialValue="1"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </HBox>
+
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+
+                        <!-- ── Strategy selection ──────────────────────────── -->
+                        <TitledPane text="Strategies" expanded="true">
+                            <content>
+                                <VBox spacing="8" styleClass="surface-card">
+                                    <children>
+                                        <HBox spacing="8">
+                                            <children>
+                                                <Button text="Select All" onAction="#onSelectAllStrat" styleClass="btn-text"/>
+                                                <Button text="Select None" onAction="#onSelectNoneStrat" styleClass="btn-text"/>
+                                            </children>
+                                        </HBox>
+                                        <VBox fx:id="strategyPane" styleClass="checkbox-list"/>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+
+                        <!-- ── Backtest settings ───────────────────────────── -->
+                        <TitledPane text="Backtest Settings" expanded="true">
+                            <content>
+                                <VBox spacing="6" styleClass="surface-card">
+                                    <children>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Training Window (days)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Spinner fx:id="windowSpinner" editable="true" prefWidth="90">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="10" max="250" initialValue="60"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Prediction Horizon (days)" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Spinner fx:id="horizonSpinner" editable="true" prefWidth="90">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="90" initialValue="7"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </HBox>
+
+                                        <Separator/>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Fee Rate" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="feeRateValue" text="0.10%" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="feeRateSlider" min="0" max="1" value="0.10" majorTickUnit="0.25" blockIncrement="0.01"/>
+
+                                        <CheckBox fx:id="zeroCostCheck" text="Zero-Cost Execution (ignore fees/slippage)"/>
+
+                                        <Separator/>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <children>
+                                                <Label text="Max Turnover" styleClass="param-label" HBox.hgrow="ALWAYS" maxWidth="9999"/>
+                                                <Label fx:id="turnoverValue" text="Off" styleClass="param-value"/>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="turnoverSlider" min="0" max="1" value="0" majorTickUnit="0.25" blockIncrement="0.05"/>
+
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+
+                        <!-- ── Run / export actions ────────────────────────── -->
+                        <Label text="Actions" styleClass="section-title"/>
+                        <VBox spacing="8" styleClass="surface-card">
+                            <children>
+                                <Button fx:id="runBtn" text="Run Strategies" onAction="#onRunStrategies" styleClass="btn-filled, btn-fullwidth"/>
+                                <Button fx:id="exportBtn" text="Export CSV / JSON" onAction="#onExport" styleClass="btn-tonal, btn-fullwidth"/>
+                                <Button text="Export HTML Report" onAction="#onExportHtml" styleClass="btn-tonal, btn-fullwidth"/>
+                                <Button text="Save State" onAction="#onSaveState" styleClass="btn-outlined, btn-fullwidth"/>
+                            </children>
+                        </VBox>
+
+                    </children>
+                    <padding>
+                        <Insets top="4" right="4" bottom="20" left="4"/>
+                    </padding>
                 </VBox>
-
-            </VBox>
+            </content>
         </ScrollPane>
     </left>
 
-    <!-- ══════════════════  CENTER – Results TabPane  ═══════════════════════ -->
+    <!-- ======================================================================
+         CENTER — RESULT TABS
+         ====================================================================== -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="result-tabs">
+        <TabPane styleClass="result-tabs, tab-pane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
 
-            <!-- ── Portfolio Weights tab ──────────────────────────────────── -->
-            <Tab text="📊  Portfolio Weights">
-                <VBox spacing="0">
-                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="tab-toolbar">
-                        <padding><Insets top="8" bottom="8" left="12" right="12"/></padding>
-                        <Label text="Strategy:" styleClass="param-label"/>
-                        <ComboBox fx:id="strategySelector" prefWidth="280"/>
-                    </HBox>
-                    <SplitPane dividerPositions="0.55" VBox.vgrow="ALWAYS">
-                        <PieChart fx:id="weightsChart" title="Allocation"
-                                  labelsVisible="true" legendVisible="true"
-                                  animated="false"/>
-                        <VBox spacing="12" styleClass="stats-panel">
-                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
-                            <Label text="Portfolio Statistics" styleClass="section-title"/>
-                            <GridPane fx:id="statsGrid" hgap="14" vgap="8"/>
-                            <Separator/>
-                            <Label text="Weight Breakdown" styleClass="section-title"/>
-                            <TableView fx:id="weightsTable" VBox.vgrow="ALWAYS"/>
+                <!-- 0: Portfolio Weights -->
+                <Tab text="Portfolio Weights">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Strategy:" styleClass="param-label"/>
+                                        <ComboBox fx:id="strategySelector" prefWidth="240"/>
+                                    </children>
+                                </HBox>
+                                <HBox spacing="14" VBox.vgrow="ALWAYS">
+                                    <children>
+                                        <PieChart fx:id="weightsChart" HBox.hgrow="ALWAYS" minWidth="380" legendVisible="true"/>
+                                        <VBox spacing="12" HBox.hgrow="ALWAYS" minWidth="380">
+                                            <children>
+                                                <Label text="Portfolio Statistics" styleClass="subsection-title"/>
+                                                <GridPane fx:id="statsGrid" styleClass="stats-grid"/>
+                                                <Label text="Asset Weights" styleClass="subsection-title"/>
+                                                <TableView fx:id="weightsTable" VBox.vgrow="ALWAYS" minHeight="220"/>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
                         </VBox>
-                    </SplitPane>
-                </VBox>
-            </Tab>
+                    </content>
+                </Tab>
 
-            <!-- ── Backtest / Compare tab ─────────────────────────────────── -->
-            <Tab text="📈  Backtest &amp; Compare">
-                <VBox spacing="0">
-                    <!-- Equity curves -->
-                    <LineChart fx:id="equityChart" title="Equity Curves — All Strategies"
-                               animated="false" VBox.vgrow="ALWAYS" createSymbols="false"
-                               prefHeight="420">
-                        <xAxis><NumberAxis label="Rebalancing Step"/></xAxis>
-                        <yAxis><NumberAxis label="Equity (start = 1.0)"/></yAxis>
-                    </LineChart>
+                <!-- 1: Backtest Compare -->
+                <Tab text="Backtest Compare">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <LineChart fx:id="equityChart" VBox.vgrow="ALWAYS" minHeight="320" createSymbols="false" animated="false">
+                                    <xAxis>
+                                        <NumberAxis label="Period" side="BOTTOM"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Equity" side="LEFT"/>
+                                    </yAxis>
+                                </LineChart>
+                                <Label text="Strategy Comparison" styleClass="subsection-title"/>
+                                <TableView fx:id="compareTable" VBox.vgrow="ALWAYS" minHeight="220"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-                    <!-- Strategy comparison table -->
-                    <Label text="Strategy Comparison  (sorted by Sharpe ↓)"
-                           styleClass="section-title"
-                           style="-fx-padding: 6 0 4 12;"/>
-                    <TableView fx:id="compareTable" prefHeight="200"/>
-                </VBox>
-            </Tab>
+                <!-- 2: Forecast -->
+                <Tab text="Forecast">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Forecast Horizon:" styleClass="param-label"/>
+                                        <ComboBox fx:id="forecastHorizonCombo" prefWidth="140" onAction="#onForecastHorizonChanged"/>
+                                    </children>
+                                </HBox>
+                                <LineChart fx:id="forecastChart" VBox.vgrow="ALWAYS" minHeight="300" createSymbols="false" animated="false">
+                                    <xAxis>
+                                        <NumberAxis label="Day" side="BOTTOM"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Cumulative Return %" side="LEFT"/>
+                                    </yAxis>
+                                </LineChart>
+                                <Label text="Per-Asset Forecast" styleClass="subsection-title"/>
+                                <TableView fx:id="forecastTable" VBox.vgrow="ALWAYS" minHeight="220"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-            <!-- ── Forecast tab ─────────────────────────────────────────────── -->
-            <Tab text="🔮  Forecast">
-                <VBox spacing="0">
-                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="tab-toolbar">
-                        <padding><Insets top="6" bottom="6" left="12" right="12"/></padding>
-                        <Label text="Forecast Horizon:" styleClass="param-label"/>
-                        <ComboBox fx:id="forecastHorizonCombo" prefWidth="120"
-                                  onAction="#onForecastHorizonChanged"/>
-                    </HBox>
-                    <LineChart fx:id="forecastChart" title="Return Forecast"
-                               animated="false" VBox.vgrow="ALWAYS" createSymbols="false"
-                               prefHeight="420">
-                        <xAxis><NumberAxis label="Days Ahead"/></xAxis>
-                        <yAxis><NumberAxis label="Cumulative Return (%)"/></yAxis>
-                    </LineChart>
+                <!-- 3: Correlation -->
+                <Tab text="Correlation">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <Label text="Asset Correlation Heatmap" styleClass="subsection-title"/>
+                                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                                    <content>
+                                        <GridPane fx:id="heatmapGrid" styleClass="heatmap-grid"/>
+                                    </content>
+                                </ScrollPane>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-                    <Label text="Asset Forecast Summary"
-                           styleClass="section-title"
-                           style="-fx-padding: 6 0 4 12;"/>
-                    <TableView fx:id="forecastTable" prefHeight="200"/>
-                </VBox>
-            </Tab>
-
-            <!-- ── Correlation Heatmap tab ──────────────────────────────────── -->
-            <Tab text="🌡️  Correlation">
-                <VBox spacing="8">
-                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
-                    <Label text="Pairwise Correlation Matrix (current window)"
-                           styleClass="section-title"/>
-                    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true">
-                        <GridPane fx:id="heatmapGrid" hgap="2" vgap="2"/>
-                    </ScrollPane>
-                </VBox>
-            </Tab>
-
-            <!-- ── Recommendations tab ────────────────────────────────────── -->
-            <Tab text="💡  Recommendations">
-                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                            styleClass="content-scroll">
-                    <VBox spacing="12">
-                        <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
-                        <Label text="Portfolio Recommendations &amp; Strategy Advice"
-                               styleClass="section-title"/>
-                        <Label text="Based on your forecast analysis and backtest results, here is a summary recommendation."
-                               styleClass="param-label" wrapText="true" maxWidth="800"/>
-                        <Separator/>
-                        <HBox spacing="16">
-                            <VBox fx:id="recommendationCards" spacing="12"
-                                  prefWidth="480" minWidth="400"/>
-                            <VBox spacing="12" prefWidth="320" minWidth="280">
-                                <Label text="Selected Strategy Summary" styleClass="section-title"/>
-                                <VBox fx:id="strategySummaryBox" spacing="8"/>
-                                <Separator/>
-                                <Label text="Warnings &amp; Considerations" styleClass="section-title"/>
-                                <VBox fx:id="warningsBox" spacing="6"/>
-                            </VBox>
+                <!-- 4: Recommendations -->
+                <Tab text="Recommendations">
+                    <content>
+                        <HBox spacing="14">
+                            <children>
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                                    <children>
+                                        <Label text="Recommendations" styleClass="subsection-title"/>
+                                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                                            <content>
+                                                <VBox fx:id="recommendationCards" spacing="10"/>
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="280" styleClass="surface-card">
+                                    <children>
+                                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane">
+                                            <content>
+                                                <VBox fx:id="strategySummaryBox" spacing="4"/>
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="280" styleClass="surface-card">
+                                    <children>
+                                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane">
+                                            <content>
+                                                <VBox fx:id="warningsBox" spacing="4"/>
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                </VBox>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
                         </HBox>
-                    </VBox>
-                </ScrollPane>
-            </Tab>
+                    </content>
+                </Tab>
 
-            <!-- ── Stress Test tab ────────────────────────────────────────── -->
-            <Tab text="🔬  Stress Test">
-                <VBox spacing="8">
-                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Label text="Scenario:" styleClass="param-label"/>
-                        <ComboBox fx:id="scenarioCombo" prefWidth="200"/>
-                        <Button fx:id="runStressBtn" text="Run Stress Test"
-                                onAction="#onRunStressTest" styleClass="primary-btn"/>
-                    </HBox>
-                    <VBox fx:id="stressResultsBox" spacing="8" VBox.vgrow="ALWAYS"/>
-                    <TableView fx:id="stressTable" prefHeight="200"/>
-                </VBox>
-            </Tab>
+                <!-- 5: Stress Test -->
+                <Tab text="Stress Test">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Scenario:" styleClass="param-label"/>
+                                        <ComboBox fx:id="scenarioCombo" prefWidth="240"/>
+                                        <Button fx:id="runStressBtn" text="Run Stress Test" onAction="#onRunStressTest" styleClass="btn-filled-tertiary"/>
+                                    </children>
+                                </HBox>
+                                <VBox fx:id="stressResultsBox" spacing="10"/>
+                                <Label text="Stress Test Results" styleClass="subsection-title"/>
+                                <TableView fx:id="stressTable" VBox.vgrow="ALWAYS" minHeight="160"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-            <!-- ── Monte Carlo tab ────────────────────────────────────────── -->
-            <Tab text="🎲  Monte Carlo">
-                <VBox spacing="8">
-                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <Label text="Paths:" styleClass="param-label"/>
-                        <Spinner fx:id="mcPathsSpinner" min="100" max="10000" initialValue="1000"
-                                 editable="true" prefWidth="90"/>
-                        <Label text="Horizon:" styleClass="param-label"/>
-                        <Spinner fx:id="mcHorizonSpinner" min="1" max="365" initialValue="30"
-                                 editable="true" prefWidth="90"/>
-                        <Label text="Drift:" styleClass="param-label"/>
-                        <Slider fx:id="mcDriftSlider" min="-0.005" max="0.005" value="0.001"
-                                showTickLabels="true" majorTickUnit="0.002" prefWidth="120"/>
-                        <Label text="Vol:" styleClass="param-label"/>
-                        <Slider fx:id="mcVolSlider" min="0.01" max="0.1" value="0.03"
-                                showTickLabels="true" majorTickUnit="0.02" prefWidth="120"/>
-                        <Button fx:id="runMcBtn" text="Simulate"
-                                onAction="#onRunMonteCarlo" styleClass="primary-btn"/>
-                    </HBox>
-                    <LineChart fx:id="mcChart" title="Monte Carlo Fan Chart"
-                               animated="false" createSymbols="false" prefHeight="350"
-                               VBox.vgrow="ALWAYS">
-                        <xAxis><NumberAxis label="Day"/></xAxis>
-                        <yAxis><NumberAxis label="Value"/></yAxis>
-                    </LineChart>
-                    <GridPane fx:id="mcResultsGrid" hgap="14" vgap="8"/>
-                </VBox>
-            </Tab>
+                <!-- 6: Monte Carlo -->
+                <Tab text="Monte Carlo">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="16">
+                                    <children>
+                                        <VBox spacing="4">
+                                            <children>
+                                                <Label text="Paths" styleClass="param-label"/>
+                                                <Spinner fx:id="mcPathsSpinner" editable="true" prefWidth="110">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="100" max="20000" initialValue="1000" amountToStepBy="100"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="4">
+                                            <children>
+                                                <Label text="Horizon (days)" styleClass="param-label"/>
+                                                <Spinner fx:id="mcHorizonSpinner" editable="true" prefWidth="110">
+                                                    <valueFactory>
+                                                        <javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="365" initialValue="30"/>
+                                                    </valueFactory>
+                                                </Spinner>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="4" HBox.hgrow="ALWAYS" minWidth="160">
+                                            <children>
+                                                <Label text="Drift" styleClass="param-label"/>
+                                                <Slider fx:id="mcDriftSlider" min="-0.05" max="0.05" value="0.0" blockIncrement="0.001"/>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="4" HBox.hgrow="ALWAYS" minWidth="160">
+                                            <children>
+                                                <Label text="Volatility" styleClass="param-label"/>
+                                                <Slider fx:id="mcVolSlider" min="0" max="0.2" value="0.02" blockIncrement="0.005"/>
+                                            </children>
+                                        </VBox>
+                                        <Button fx:id="runMcBtn" text="Run Simulation" onAction="#onRunMonteCarlo" styleClass="btn-filled-tertiary"/>
+                                    </children>
+                                </HBox>
+                                <LineChart fx:id="mcChart" VBox.vgrow="ALWAYS" minHeight="300" createSymbols="false" animated="false">
+                                    <xAxis>
+                                        <NumberAxis label="Day" side="BOTTOM"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Value" side="LEFT"/>
+                                    </yAxis>
+                                </LineChart>
+                                <Label text="Simulation Statistics" styleClass="subsection-title"/>
+                                <GridPane fx:id="mcResultsGrid" styleClass="mc-results-grid"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-            <!-- ── Attribution tab ─────────────────────────────────────────── -->
-            <Tab text="📊  Attribution">
-                <VBox spacing="8">
-                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
-                    <GridPane fx:id="attributionGrid" hgap="14" vgap="8"/>
-                    <Label text="Brinson Attribution" styleClass="section-title"
-                           style="-fx-padding: 6 0 4 0;"/>
-                    <TableView fx:id="attributionTable" VBox.vgrow="ALWAYS"/>
-                </VBox>
-            </Tab>
+                <!-- 7: Attribution -->
+                <Tab text="Attribution">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <Label text="Performance Attribution" styleClass="subsection-title"/>
+                                <GridPane fx:id="attributionGrid" styleClass="attribution-grid"/>
+                                <Label text="Per-Asset Contribution" styleClass="subsection-title"/>
+                                <TableView fx:id="attributionTable" VBox.vgrow="ALWAYS" minHeight="240"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-            <!-- ── Sensitivity tab ─────────────────────────────────────────── -->
-            <Tab text="🔥  Sensitivity">
-                <VBox spacing="8">
-                    <padding><Insets top="10" bottom="10" left="12" right="12"/></padding>
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Label text="Parameter:" styleClass="param-label"/>
-                        <ComboBox fx:id="sensitivityParamCombo" prefWidth="180"/>
-                        <Button fx:id="runSensitivityBtn" text="Run"
-                                onAction="#onRunSensitivity" styleClass="primary-btn"/>
-                    </HBox>
-                    <LineChart fx:id="sensitivityChart" title="Parameter Sensitivity"
-                               animated="false" createSymbols="false" prefHeight="350"
-                               VBox.vgrow="ALWAYS">
-                        <xAxis><NumberAxis label="Parameter Value"/></xAxis>
-                        <yAxis><NumberAxis label="Sharpe Ratio"/></yAxis>
-                    </LineChart>
-                </VBox>
-            </Tab>
+                <!-- 8: Sensitivity -->
+                <Tab text="Sensitivity">
+                    <content>
+                        <VBox spacing="12">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Parameter:" styleClass="param-label"/>
+                                        <ComboBox fx:id="sensitivityParamCombo" prefWidth="220"/>
+                                        <Button fx:id="runSensitivityBtn" text="Run Sensitivity Sweep" onAction="#onRunSensitivity" styleClass="btn-filled-tertiary"/>
+                                    </children>
+                                </HBox>
+                                <LineChart fx:id="sensitivityChart" VBox.vgrow="ALWAYS" minHeight="340" createSymbols="true" animated="false">
+                                    <xAxis>
+                                        <NumberAxis label="Parameter Value" side="BOTTOM"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Sharpe Ratio" side="LEFT"/>
+                                    </yAxis>
+                                </LineChart>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
-            <!-- ── Log tab ────────────────────────────────────────────────── -->
-            <Tab text="📝  Log">
-                <TextArea fx:id="logArea" editable="false" wrapText="true"/>
-            </Tab>
+                <!-- 9: Log -->
+                <Tab text="Log">
+                    <content>
+                        <VBox spacing="8">
+                            <children>
+                                <Label text="Activity Log" styleClass="subsection-title"/>
+                                <TextArea fx:id="logArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                            </children>
+                            <padding>
+                                <Insets top="6" right="6" bottom="6" left="6"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
 
+            </tabs>
         </TabPane>
     </center>
 
-    <!-- ══════════════════  BOTTOM – Status bar  ════════════════════════════ -->
+    <!-- ======================================================================
+         BOTTOM STATUS BAR
+         ====================================================================== -->
     <bottom>
-        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
-            <padding><Insets top="6" bottom="6" left="14" right="14"/></padding>
-            <ProgressBar fx:id="progressBar" prefWidth="200" visible="false"/>
-            <Label fx:id="statusLabel" text="Ready  —  Step 1: Fetch data, Step 2: Run strategies"/>
+        <HBox styleClass="status-bar">
+            <children>
+                <Label fx:id="statusLabel" text="Ready" styleClass="status-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ProgressBar fx:id="progressBar" visible="false" progress="-1" prefWidth="180"/>
+            </children>
         </HBox>
     </bottom>
 

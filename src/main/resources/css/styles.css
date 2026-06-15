@@ -1,0 +1,622 @@
+/* ============================================================================
+   Crypto Portfolio Optimizer — Material Design 3 (Dark) theme
+   High-contrast palette, clear button hierarchy, M3 shapes & elevation.
+   ============================================================================ */
+
+.root {
+    /* ---- M3 color tokens (dark scheme) -------------------------------- */
+    -md-background:            #141218;
+    -md-surface:               #141218;
+    -md-surface-dim:           #0F0E13;
+    -md-surface-container-low: #1D1B20;
+    -md-surface-container:     #211F26;
+    -md-surface-container-high:#2B2930;
+    -md-surface-container-highest:#36343B;
+    -md-on-surface:            #E6E0E9;
+    -md-on-surface-variant:    #CAC4D0;
+
+    -md-primary:               #D0BCFF;
+    -md-on-primary:            #381E72;
+    -md-primary-container:     #4F378B;
+    -md-on-primary-container:  #EADDFF;
+
+    -md-secondary:             #CCC2DC;
+    -md-on-secondary:          #332D41;
+    -md-secondary-container:   #4A4458;
+    -md-on-secondary-container:#E8DEF8;
+
+    -md-tertiary:              #EFB8C8;
+    -md-on-tertiary:           #492532;
+    -md-tertiary-container:    #633B48;
+    -md-on-tertiary-container: #FFD8E4;
+
+    -md-error:                 #F2B8B5;
+    -md-on-error:              #601410;
+    -md-error-container:       #8C1D18;
+    -md-on-error-container:    #F9DEDC;
+
+    -md-success:               #9CCC65;
+    -md-on-success:            #1B3300;
+    -md-warning:               #FFB74D;
+    -md-on-warning:            #3E2700;
+
+    -md-outline:               #938F99;
+    -md-outline-variant:       #49454F;
+
+    -fx-font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    -fx-background-color: -md-background;
+    -fx-text-fill: -md-on-surface;
+}
+
+/* ============================================================================
+   Generic text / labels
+   ============================================================================ */
+
+.label {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 12px;
+}
+
+.app-title {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+
+.app-subtitle {
+    -fx-text-fill: -md-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.section-title {
+    -fx-text-fill: -md-primary;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 0 2 0;
+}
+
+.subsection-title {
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 6 0 0 0;
+}
+
+.hint-text {
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+}
+
+.param-label {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 12px;
+}
+
+.param-value {
+    -fx-text-fill: -md-on-primary-container;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: -md-primary-container;
+    -fx-background-radius: 8;
+    -fx-padding: 2 8 2 8;
+    -fx-min-width: 64px;
+    -fx-alignment: CENTER;
+}
+
+.stat-label {
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-font-size: 12px;
+    -fx-padding: 3 8 3 0;
+}
+
+.stat-value {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 3 0 3 0;
+}
+
+/* ============================================================================
+   Top app bar
+   ============================================================================ */
+
+.top-app-bar {
+    -fx-background-color: -md-surface-container;
+    -fx-padding: 14 20 14 20;
+    -fx-spacing: 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 8, 0, 0, 2);
+}
+
+/* ============================================================================
+   Buttons — clear M3 hierarchy:
+     .btn-filled            -> primary action (high emphasis)
+     .btn-filled-tertiary   -> alternate high-emphasis (e.g. stress/MC run)
+     .btn-tonal             -> secondary action (medium emphasis)
+     .btn-outlined          -> tertiary / utility action
+     .btn-text              -> low emphasis (select all / none)
+   ============================================================================ */
+
+.button {
+    -fx-background-radius: 20;
+    -fx-padding: 8 18 8 18;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-color: -md-surface-container-high;
+    -fx-text-fill: -md-on-surface;
+    -fx-border-color: transparent;
+}
+.button:hover   { -fx-background-color: -md-surface-container-highest; }
+.button:armed   { -fx-opacity: 0.85; }
+.button:disabled{ -fx-opacity: 0.38; -fx-cursor: default; }
+
+.btn-filled {
+    -fx-background-color: -md-primary;
+    -fx-text-fill: -md-on-primary;
+}
+.btn-filled:hover { -fx-background-color: derive(-md-primary, 10%); }
+
+.btn-filled-tertiary {
+    -fx-background-color: -md-tertiary;
+    -fx-text-fill: -md-on-tertiary;
+}
+.btn-filled-tertiary:hover { -fx-background-color: derive(-md-tertiary, 10%); }
+
+.btn-tonal {
+    -fx-background-color: -md-secondary-container;
+    -fx-text-fill: -md-on-secondary-container;
+}
+.btn-tonal:hover { -fx-background-color: derive(-md-secondary-container, 12%); }
+
+.btn-outlined {
+    -fx-background-color: transparent;
+    -fx-text-fill: -md-on-surface;
+    -fx-border-color: -md-outline;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+.btn-outlined:hover { -fx-background-color: -md-surface-container-high; }
+
+.btn-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: -md-primary;
+    -fx-padding: 6 10 6 10;
+    -fx-font-weight: 700;
+}
+.btn-text:hover { -fx-background-color: -md-surface-container; }
+
+.btn-small {
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 11px;
+}
+
+.btn-fullwidth {
+    -fx-max-width: 9999;
+    -fx-pref-width: 9999;
+}
+
+/* Toggle (language switch) — pill switch */
+.toggle-button {
+    -fx-background-color: -md-surface-container-high;
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-background-radius: 16;
+    -fx-padding: 6 16 6 16;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-border-color: -md-outline;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.toggle-button:selected {
+    -fx-background-color: -md-primary;
+    -fx-text-fill: -md-on-primary;
+    -fx-border-color: -md-primary;
+}
+.toggle-button:hover { -fx-background-color: -md-surface-container-highest; }
+
+/* ============================================================================
+   Sidebar / scroll panes / containers
+   ============================================================================ */
+
+.sidebar-scroll, .sidebar-scroll > .viewport {
+    -fx-background-color: -md-surface;
+}
+.sidebar-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10;
+}
+.sidebar-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -md-outline-variant;
+    -fx-background-radius: 6;
+}
+
+.sidebar {
+    -fx-background-color: -md-surface;
+    -fx-padding: 16;
+    -fx-spacing: 10;
+    -fx-pref-width: 360;
+}
+
+.surface-card {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 16;
+    -fx-padding: 14;
+    -fx-spacing: 8;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+}
+
+.checkbox-list {
+    -fx-spacing: 4;
+    -fx-padding: 4 0 4 4;
+}
+
+/* CheckBox / RadioButton */
+.check-box {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 12px;
+}
+.check-box .box {
+    -fx-background-color: -md-surface-container-high;
+    -fx-border-color: -md-outline;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+.check-box:selected .box {
+    -fx-background-color: -md-primary;
+    -fx-border-color: -md-primary;
+}
+.check-box:selected .mark {
+    -fx-background-color: -md-on-primary;
+}
+.check-box:disabled { -fx-opacity: 0.45; }
+
+/* ============================================================================
+   Sliders
+   ============================================================================ */
+
+.slider .track {
+    -fx-background-color: -md-surface-container-highest;
+    -fx-background-radius: 6;
+    -fx-pref-height: 6;
+}
+.slider .axis { -fx-tick-label-fill: -md-on-surface-variant; }
+.slider:disabled { -fx-opacity: 0.4; }
+
+.slider .thumb {
+    -fx-background-color: -md-primary;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 4, 0, 0, 1);
+}
+.slider .thumb:hover, .slider .thumb:pressed {
+    -fx-background-color: derive(-md-primary, 15%);
+}
+
+/* Approximate "filled portion" using primary-tinted track-area */
+.slider .track-area { -fx-background-color: transparent; }
+
+/* ============================================================================
+   ComboBox / Spinner / TextField / PasswordField
+   ============================================================================ */
+
+.combo-box, .spinner, .text-field, .password-field {
+    -fx-background-color: -md-surface-container-high;
+    -fx-background-radius: 8;
+    -fx-border-color: -md-outline;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-text-fill: -md-on-surface;
+    -fx-prompt-text-fill: -md-on-surface-variant;
+    -fx-font-size: 12px;
+    -fx-mark-color: -md-on-surface;
+}
+.combo-box .list-cell, .combo-box .text-field {
+    -fx-text-fill: -md-on-surface;
+    -fx-background-color: transparent;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: -md-surface-container-high;
+    -fx-border-color: -md-outline-variant;
+}
+.combo-box-popup .list-cell {
+    -fx-text-fill: -md-on-surface;
+    -fx-background-color: -md-surface-container-high;
+    -fx-padding: 6 10 6 10;
+}
+.combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: -md-primary-container;
+    -fx-text-fill: -md-on-primary-container;
+}
+
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: -md-surface-container-highest;
+}
+.spinner .increment-arrow, .spinner .decrement-arrow {
+    -fx-background-color: -md-on-surface;
+}
+
+.text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: -md-primary;
+    -fx-border-width: 1.5;
+}
+
+/* ============================================================================
+   TabPane — Material 3 style tabs with active indicator
+   ============================================================================ */
+
+.tab-pane {
+    -fx-background-color: -md-surface;
+    -fx-tab-min-height: 38;
+}
+.tab-pane > .tab-header-area {
+    -fx-background-color: -md-surface-container;
+    -fx-padding: 6 12 0 12;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 9 16 9 16;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: -md-surface-container-high;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -md-surface-container-highest;
+    -fx-border-color: -md-primary transparent transparent transparent;
+    -fx-border-width: 3 0 0 0;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: -md-primary;
+}
+.tab-pane > .tab-content-area {
+    -fx-background-color: -md-surface;
+    -fx-padding: 14;
+}
+.tab-pane .tab-header-background {
+    -fx-background-color: -md-surface-container;
+}
+
+/* ============================================================================
+   TableView
+   ============================================================================ */
+
+.table-view {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-radius: 12;
+    -fx-table-cell-border-color: transparent;
+}
+.table-view .column-header-background {
+    -fx-background-color: -md-surface-container-high;
+    -fx-background-radius: 12 12 0 0;
+}
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent -md-outline-variant transparent transparent;
+    -fx-size: 34;
+}
+.table-view .column-header .label {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+    -fx-alignment: CENTER_LEFT;
+}
+.table-row-cell {
+    -fx-background-color: -md-surface-container-low;
+    -fx-table-cell-border-color: transparent;
+    -fx-border-color: transparent transparent -md-outline-variant transparent;
+}
+.table-row-cell:odd {
+    -fx-background-color: -md-surface-container;
+}
+.table-row-cell:selected {
+    -fx-background-color: -md-primary-container;
+}
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: -md-on-primary-container;
+}
+.table-cell {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 6 10 6 10;
+}
+.table-view .scroll-bar .thumb {
+    -fx-background-color: -md-outline-variant;
+    -fx-background-radius: 6;
+}
+
+/* ============================================================================
+   TitledPane (collapsible parameter sections)
+   ============================================================================ */
+
+.titled-pane {
+    -fx-text-fill: -md-on-surface;
+}
+.titled-pane > .title {
+    -fx-background-color: -md-surface-container;
+    -fx-background-radius: 12;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+.titled-pane > .title > .arrow-button .arrow {
+    -fx-background-color: -md-primary;
+}
+.titled-pane > .content {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 0 0 12 12;
+    -fx-padding: 10;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 12 12;
+}
+.titled-pane:expanded > .title {
+    -fx-background-radius: 12 12 0 0;
+}
+
+/* ============================================================================
+   TextArea (log)
+   ============================================================================ */
+
+.text-area {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+.text-area .content {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+}
+.text-area .text {
+    -fx-fill: -md-on-surface;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 12px;
+}
+
+/* ============================================================================
+   ProgressBar / status bar
+   ============================================================================ */
+
+.status-bar {
+    -fx-background-color: -md-surface-container;
+    -fx-padding: 10 18 10 18;
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0, 0, -1);
+}
+.status-label {
+    -fx-text-fill: -md-on-surface-variant;
+    -fx-font-size: 12px;
+}
+.progress-bar > .track {
+    -fx-background-color: -md-surface-container-high;
+    -fx-background-radius: 8;
+}
+.progress-bar > .bar {
+    -fx-background-color: -md-primary;
+    -fx-background-radius: 8;
+    -fx-padding: 4;
+}
+
+/* ============================================================================
+   Cards: recommendations / stress / forecast
+   ============================================================================ */
+
+.recommendation-card {
+    -fx-background-color: -md-surface-container;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-color: -md-primary;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 6, 0, 0, 2);
+}
+
+.stress-card {
+    -fx-background-color: -md-surface-container;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-color: -md-error;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 6, 0, 0, 2);
+}
+
+.stats-grid {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-hgap: 14;
+    -fx-vgap: 4;
+}
+
+.heatmap-grid, .mc-results-grid, .attribution-grid {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-border-color: -md-outline-variant;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-hgap: 6;
+    -fx-vgap: 6;
+}
+
+/* ============================================================================
+   Charts
+   ============================================================================ */
+
+.chart {
+    -fx-background-color: transparent;
+}
+.chart-title {
+    -fx-text-fill: -md-on-surface;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+.chart-content {
+    -fx-background-color: -md-surface-container-low;
+    -fx-background-radius: 12;
+    -fx-padding: 14;
+}
+.chart-plot-background {
+    -fx-background-color: -md-surface-dim;
+}
+.chart-vertical-grid-lines, .chart-horizontal-grid-lines {
+    -fx-stroke: -md-outline-variant;
+}
+.axis {
+    -fx-tick-label-fill: -md-on-surface-variant;
+    -fx-font-size: 10px;
+}
+.axis-label {
+    -fx-text-fill: -md-on-surface-variant;
+}
+.axis-tick-mark, .axis-minor-tick-mark {
+    -fx-stroke: -md-outline-variant;
+}
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-text-fill: -md-on-surface;
+}
+.chart-legend-item text {
+    -fx-fill: -md-on-surface;
+    -fx-font-size: 11px;
+}
+.chart-pie-label {
+    -fx-fill: -md-on-surface;
+    -fx-font-size: 11px;
+}
+.chart-pie-label-line {
+    -fx-stroke: -md-on-surface-variant;
+}
+
+/* Separator */
+.separator *.line {
+    -fx-border-color: -md-outline-variant;
+    -fx-border-width: 1;
+}
+
+/* ScrollPane generic */
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
