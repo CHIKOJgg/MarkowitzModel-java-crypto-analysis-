@@ -322,3 +322,102 @@
 }
 .combo-box .arrow-button { -fx-background-color: #0f3460; }
 .combo-box .arrow        { -fx-background-color: #c8d0e0; }
+
+/* ── Table hover effects ───────────────────────────────────────────────────── */
+.table-row-cell {
+    -fx-background-color: #16213e;
+    -fx-border-color: transparent;
+}
+.table-row-cell:odd {
+    -fx-background-color: #1a2744;
+}
+.table-row-cell:selected {
+    -fx-background-color: #0f3460;
+}
+.table-row-cell:hover {
+    -fx-background-color: #1e3a5f;
+}
+.table-cell {
+    -fx-text-fill: #c8d0e0;
+    -fx-padding: 4 8;
+}
+.table-column-header {
+    -fx-background-color: #0f3460;
+}
+.table-column-header .label {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+/* ── Tooltip ───────────────────────────────────────────────────────────────── */
+.tooltip {
+    -fx-background-color: #1e2d50;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: #e94560;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-font-size: 12px;
+}
+
+/* ── ScrollBar ─────────────────────────────────────────────────────────────── */
+.scroll-bar {
+    -fx-background-color: #16213e;
+}
+.scroll-bar .thumb {
+    -fx-background-color: #3a4d78;
+    -fx-background-radius: 4;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: #4a5d88;
+}
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: #16213e;
+}
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: #3a4d78;
+}
+
+/* ── Focus ring ────────────────────────────────────────────────────────────── */
+.focused {
+    -fx-background-color: #e94560;
+}
+.text-field:focused,
+.password-field:focused,
+.spinner .text-field:focused {
+    -fx-border-color: #e94560;
+    -fx-background-color: #1a2744;
+}
+
+/* ── Separator ─────────────────────────────────────────────────────────────── */
+.separator .line {
+    -fx-border-color: #2a3d68;
+}
+
+/* ── Line chart improvements ───────────────────────────────────────────────── */
+.default-color0.chart-series-line { -fx-stroke: #e94560; }
+.default-color1.chart-series-line { -fx-stroke: #00d4ff; }
+.default-color2.chart-series-line { -fx-stroke: #7cfc00; }
+.default-color3.chart-series-line { -fx-stroke: #ffa500; }
+.default-color4.chart-series-line { -fx-stroke: #ff69b4; }
+.default-color5.chart-series-line { -fx-stroke: #bf7fff; }
+.default-color6.chart-series-line { -fx-stroke: #ffff00; }
+.default-color7.chart-series-line { -fx-stroke: #00ced1; }
+
+.chart-legend {
+    -fx-background-color: #16213e;
+    -fx-border-color: #2a3d68;
+}
+.chart-legend-item {
+    -fx-text-fill: #c8d0e0;
+}
+.chart-alternative-row-fill {
+    -fx-fill: #1a2744;
+    -fx-stroke: transparent;
+}
+.chart-alternative-column-fill {
+    -fx-fill: #1a2744;
+    -fx-stroke: transparent;
+}

@@ -51,7 +51,7 @@ public class CoinData {
         pricesMap.put(coinName, getClosePrices());
     }
 
-    /** Populate returnMap with daily log-returns. Call after setPricesMap. */
+    /** Populate returnMap with daily simple returns: (P_t - P_{t-1}) / P_{t-1}. Call after setPricesMap. */
     public void setReturnMap() {
         List<Double> px = pricesMap.get(coinName);
         List<Double> returns = new ArrayList<>(px.size() - 1);

@@ -1,5 +1,6 @@
 package org.example.alpha;
 
+import org.example.Defaults;
 import org.ojalgo.matrix.MatrixR064;
 
 /**
@@ -25,7 +26,7 @@ public class EWMAAlpha implements AlphaModel {
         this.shortPenalty = shortPenalty;
     }
 
-    public EWMAAlpha(double alpha) { this(alpha, 0.02); }
+    public EWMAAlpha(double alpha) { this(alpha, Defaults.SHORT_PENALTY); }
 
     // ── AlphaModel ────────────────────────────────────────────────────────────
 

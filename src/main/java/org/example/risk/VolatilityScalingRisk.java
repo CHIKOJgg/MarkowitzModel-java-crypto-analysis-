@@ -1,5 +1,6 @@
 package org.example.risk;
 
+import org.example.Defaults;
 import org.ojalgo.matrix.MatrixR064;
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,7 +24,7 @@ public class VolatilityScalingRisk implements RiskModel {
         this.maxLeverage = maxLeverage;
     }
 
-    public VolatilityScalingRisk(double targetVol) { this(targetVol, 2.0); }
+    public VolatilityScalingRisk(double targetVol) { this(targetVol, Defaults.VOL_SCALE_MAX_LEVERAGE); }
 
     @Override
     public List<BigDecimal> adjust(List<BigDecimal> weights, MatrixR064 returns) {
@@ -60,7 +61,9 @@ public class VolatilityScalingRisk implements RiskModel {
             sumR2 += pRet * pRet;
         }
         double mean = sumR / rows;
-        double var  = sumR2 / rows - mean * mean;
+        double var  = rows > 1
+                ? (sumR2 / rows - mean * mean) * rows / (rows - 1)
+                : 0;
         return var > 0 ? Math.sqrt(var) : 0;
     }
 

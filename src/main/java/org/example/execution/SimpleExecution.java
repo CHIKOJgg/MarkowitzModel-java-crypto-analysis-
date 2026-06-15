@@ -1,5 +1,6 @@
 package org.example.execution;
 
+import org.example.Defaults;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -23,8 +24,8 @@ public class SimpleExecution implements ExecutionModel {
         this.slippage = slippage;
     }
 
-    public SimpleExecution(double feeRate) { this(feeRate, 0.0); }
-    public SimpleExecution()               { this(0.001, 0.0); }
+    public SimpleExecution(double feeRate) { this(feeRate, Defaults.SLIPPAGE); }
+    public SimpleExecution()               { this(Defaults.FEE_RATE, Defaults.SLIPPAGE); }
 
     @Override
     public double applyCosts(double equity,

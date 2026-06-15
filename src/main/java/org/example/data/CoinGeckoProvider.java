@@ -1,6 +1,7 @@
 package org.example.data;
 
 import com.google.gson.Gson;
+import org.example.Defaults;
 import org.example.model.CoinData;
 import org.example.util.Config;
 import org.ojalgo.matrix.MatrixR064;
@@ -23,11 +24,12 @@ import java.util.stream.Collectors;
  */
 public class CoinGeckoProvider implements MarketDataProvider {
 
-    private static final String BASE_URL =
-            "https://api.coingecko.com/api/v3/coins/%s" +
-            "/market_chart?vs_currency=usd&days=365&interval=daily";
+    private static final String BASE_URL = Defaults.API_BASE_URL;
 
     private final Gson gson = new Gson();
+
+    /** Shared HTTP client for all requests (avoids per-request allocation). */
+    private static final HttpClient SHARED_CLIENT = HttpClient.newHttpClient();
 
     /** In-memory cache: coinId → CoinData */
     private final Map<String, CoinData> cache = new ConcurrentHashMap<>();
@@ -65,20 +67,28 @@ public class CoinGeckoProvider implements MarketDataProvider {
     // ── Private ───────────────────────────────────────────────────────────────
 
     private CoinData fetchOne(String coin) {
+        return fetchOne(coin, 0);
+    }
+
+    private CoinData fetchOne(String coin, int attempt) {
         if (cache.containsKey(coin)) return cache.get(coin);
 
+        if (attempt >= Defaults.MAX_RETRIES) {
+            throw new RuntimeException("Failed to fetch " + coin + " after " + Defaults.MAX_RETRIES + " attempts (rate limited)");
+        }
+
         jitter();
-        lastStatus = "Fetching " + coin + "…";
+        lastStatus = "Fetching " + coin + " (attempt " + (attempt + 1) + ")...";
 
         String url = buildUrl(coin);
-        try (HttpClient client = HttpClient.newHttpClient()) {
+        try {
             HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url)).build();
-            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> resp = SHARED_CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
 
             if (resp.statusCode() == 429) {
-                // Simple back-off on rate-limit
-                TimeUnit.SECONDS.sleep(5);
-                return fetchOne(coin);
+                long backoff = Defaults.RETRY_BACKOFF_MS * (attempt + 1);
+                TimeUnit.MILLISECONDS.sleep(backoff);
+                return fetchOne(coin, attempt + 1);
             }
             if (resp.statusCode() != 200) {
                 throw new RuntimeException("HTTP " + resp.statusCode() + " for " + coin);
@@ -130,7 +140,7 @@ public class CoinGeckoProvider implements MarketDataProvider {
     }
 
     private static void jitter() {
-        try { TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(60, 280)); }
+        try { TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(Defaults.JITTER_MIN_MS, Defaults.JITTER_MAX_MS)); }
         catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 }

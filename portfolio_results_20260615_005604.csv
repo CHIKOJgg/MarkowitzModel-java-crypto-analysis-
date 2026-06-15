@@ -1,0 +1,5 @@
+Strategy,Asset,Weight,Side,FinalEquity,MaxDrawdown,Sharpe,Sortino,Calmar,VaR95,CVaR95
+"strat1","bitcoin",0,600000,LONG,1,100000,0,0500,1,5000,1,8000,2,0000,0,0200,0,0300
+"strat1","ethereum",0,400000,LONG,1,100000,0,0500,1,5000,1,8000,2,0000,0,0200,0,0300
+"strat2","bitcoin",0,300000,LONG,1,200000,0,0300,2,0000,2,5000,3,0000,0,0100,0,0200
+"strat2","ethereum",0,700000,LONG,1,200000,0,0300,2,0000,2,5000,3,0000,0,0100,0,0200

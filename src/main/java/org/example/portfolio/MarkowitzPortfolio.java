@@ -20,20 +20,33 @@ public class MarkowitzPortfolio implements PortfolioModel {
     private final double  shrinkageLambda;
     private final boolean allowShorting;
     private final Double  targetReturn;   // null -> min-variance mode
+    private final boolean useEwmaCov;
+    private final double  ewmaLambda;
 
     public MarkowitzPortfolio(double maxLong, double maxShort,
                               double shrinkageLambda, boolean allowShorting,
-                              Double targetReturn) {
+                              Double targetReturn,
+                              boolean useEwmaCov, double ewmaLambda) {
         this.maxLong         = maxLong;
         this.maxShort        = maxShort;
         this.shrinkageLambda = shrinkageLambda;
         this.allowShorting   = allowShorting;
         this.targetReturn    = targetReturn;
+        this.useEwmaCov      = useEwmaCov;
+        this.ewmaLambda      = ewmaLambda;
+    }
+
+    public MarkowitzPortfolio(double maxLong, double maxShort,
+                              double shrinkageLambda, boolean allowShorting,
+                              Double targetReturn) {
+        this(maxLong, maxShort, shrinkageLambda, allowShorting, targetReturn, false, 0.94);
     }
 
     @Override
     public List<BigDecimal> allocate(MatrixR064 returns, MatrixR064 mu) {
-        MatrixR064 cov = MatrixUtils.covarianceMatrix(returns, mu, shrinkageLambda);
+        MatrixR064 cov = useEwmaCov
+                ? MatrixUtils.ewmaCovariance(returns, ewmaLambda)
+                : MatrixUtils.covarianceMatrix(returns, mu, shrinkageLambda);
         int n = (int) returns.countColumns();
 
         // BUG FIX: alpha models emit a [1×n] row vector; ojAlgo MarkowitzModel

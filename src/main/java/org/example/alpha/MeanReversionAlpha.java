@@ -1,5 +1,6 @@
 package org.example.alpha;
 
+import org.example.Defaults;
 import org.ojalgo.matrix.MatrixR064;
 
 /**
@@ -20,8 +21,8 @@ public class MeanReversionAlpha implements AlphaModel {
         this.shortPenalty = shortPenalty;
     }
 
-    public MeanReversionAlpha(int window) { this(window, 0.01); }
-    public MeanReversionAlpha()           { this(10, 0.01); }
+    public MeanReversionAlpha(int window) { this(window, Defaults.SHORT_PENALTY); }
+    public MeanReversionAlpha()           { this(Defaults.MEAN_REVERSION_WINDOW, Defaults.SHORT_PENALTY); }
 
     @Override
     public MatrixR064 predict(MatrixR064 returns) {
@@ -45,7 +46,7 @@ public class MeanReversionAlpha implements AlphaModel {
             double zScore = (last - mean) / std;
 
             // Contrarian: high recent return → negative signal
-            double signal = -zScore / 3.0;   // scale ≈ [-1, 1]
+            double signal = -zScore / Defaults.MEAN_REVERSION_SCALE;   // scale ≈ [-1, 1]
             mu[0][j] = signal < 0 ? signal - shortPenalty : signal;
         }
         return MatrixR064.FACTORY.rows(mu);

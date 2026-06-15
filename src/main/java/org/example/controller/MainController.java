@@ -11,10 +11,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import org.example.Defaults;
 import org.example.data.CoinGeckoProvider;
 import org.example.engine.*;
 import org.example.execution.SimpleExecution;
 import org.example.execution.ZeroCostExecution;
+import org.example.forecast.ForecastEngine;
+import org.example.forecast.ForecastResult;
 import org.example.model.BacktestResult;
 import org.example.model.CoinData;
 import org.example.util.Config;
@@ -34,6 +37,7 @@ public class MainController implements Initializable {
     @FXML private VBox coinsPane;
 
     // ── Model parameters ──────────────────────────────────────────────────────
+    @FXML private ComboBox<org.example.data.Timeframe> timeframeCombo;
     @FXML private Slider  targetReturnSlider;
     @FXML private Label   targetReturnValue;
     @FXML private Slider  maxLongSlider;
@@ -45,6 +49,11 @@ public class MainController implements Initializable {
     @FXML private Label   alphaValue;
     @FXML private Slider  shrinkageSlider;
     @FXML private Label   shrinkageValue;
+    @FXML private CheckBox ewmaCovCheck;
+    @FXML private Slider  ewmaLambdaSlider;
+    @FXML private Label   ewmaLambdaValue;
+    @FXML private Slider  riskFreeRateSlider;
+    @FXML private Label   riskFreeRateValue;
     @FXML private Slider  leverageSlider;
     @FXML private Label   leverageValue;
     @FXML private Spinner<Integer> momentumLookback;
@@ -60,6 +69,8 @@ public class MainController implements Initializable {
     @FXML private Spinner<Integer> horizonSpinner;
     @FXML private Slider  feeRateSlider;
     @FXML private Label   feeRateValue;
+    @FXML private Slider  turnoverSlider;
+    @FXML private Label   turnoverValue;
     @FXML private CheckBox zeroCostCheck;
 
     // ── Buttons ───────────────────────────────────────────────────────────────
@@ -77,6 +88,13 @@ public class MainController implements Initializable {
     // ── Backtest tab ──────────────────────────────────────────────────────────
     @FXML private LineChart<Number, Number> equityChart;
     @FXML private TableView<CompareRow>     compareTable;
+
+    // ── Forecast tab ──────────────────────────────────────────────────────────
+    @FXML private LineChart<Number, Number> forecastChart;
+    @FXML private TableView<ForecastRow>    forecastTable;
+
+    // ── Correlation tab ───────────────────────────────────────────────────────
+    @FXML private GridPane heatmapGrid;
 
     // ── Log / status ──────────────────────────────────────────────────────────
     @FXML private TextArea    logArea;
@@ -105,7 +123,6 @@ public class MainController implements Initializable {
     private final CoinGeckoProvider dataProvider = new CoinGeckoProvider();
 
     private List<String>              selectedCoins;
-    private List<CoinData>            lastCoinData;
     private MatrixR064                returnMatrix;
 
     private final Map<String, BacktestResult>   lastResults = new LinkedHashMap<>();
@@ -120,8 +137,14 @@ public class MainController implements Initializable {
         bindSliders();
         buildWeightsTable();
         buildCompareTable();
+        buildForecastTable();
         loadApiKey();
         runBtn.setDisable(true);
+
+        // Timeframe selector
+        timeframeCombo.setItems(FXCollections.observableArrayList(
+                org.example.data.Timeframe.values()));
+        timeframeCombo.setValue(org.example.data.Timeframe.DAILY);
 
         strategySelector.setItems(FXCollections.observableArrayList(StrategyRegistry.allNames()));
         strategySelector.getSelectionModel().selectedItemProperty()
@@ -152,12 +175,22 @@ public class MainController implements Initializable {
         bind(maxShortSlider,     maxShortValue,     "-%.0f%%");
         bind(alphaSlider,        alphaValue,        "%.2f");
         bind(shrinkageSlider,    shrinkageValue,    "%.2f");
+        bind(ewmaLambdaSlider,   ewmaLambdaValue,   "%.2f");
+        bind(riskFreeRateSlider, riskFreeRateValue, "%.1f%%");
         bind(leverageSlider,     leverageValue,     "%.2f");
         bind(feeRateSlider,      feeRateValue,      "%.2f%%");
         bind(targetVolSlider,    targetVolValue,    "%.1f%%");
+        turnoverSlider.valueProperty().addListener((o, p, n) -> {
+            double v = n.doubleValue();
+            turnoverValue.setText(v < 0.001 ? "Disabled" : "%.0f%%".formatted(v * 100));
+        });
         volScalingCheck.selectedProperty().addListener((o, p, n) -> {
             targetVolSlider.setDisable(!n);
             targetVolValue.setDisable(!n);
+        });
+        ewmaCovCheck.selectedProperty().addListener((o, p, n) -> {
+            ewmaLambdaSlider.setDisable(!n);
+            ewmaLambdaValue.setDisable(!n);
         });
     }
 
@@ -179,8 +212,24 @@ public class MainController implements Initializable {
         addCol(compareTable, "Final Eq.",   "finalEquity",   90);
         addCol(compareTable, "Max DD",      "maxDrawdown",   90);
         addCol(compareTable, "Sharpe",      "sharpe",        80);
+        addCol(compareTable, "Sortino",     "sortino",       80);
+        addCol(compareTable, "Calmar",      "calmar",        80);
+        addCol(compareTable, "VaR 95%",     "var95",         80);
+        addCol(compareTable, "CVaR 95%",    "cvar95",        80);
         addCol(compareTable, "Avg TO",      "avgTurnover",   80);
         addCol(compareTable, "Total Fees",  "totalFees",     90);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void buildForecastTable() {
+        addCol(forecastTable, "Asset",     "assetName",    120);
+        addCol(forecastTable, "Ann. Ret",  "annReturn",     80);
+        addCol(forecastTable, "Ann. Vol",  "annVol",        80);
+        addCol(forecastTable, "Trend",     "trend",         80);
+        addCol(forecastTable, "1d",        "day1",          70);
+        addCol(forecastTable, "3d",        "day3",          70);
+        addCol(forecastTable, "7d",        "day7",          70);
+        addCol(forecastTable, "95% CI",    "ci95",         100);
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -203,18 +252,26 @@ public class MainController implements Initializable {
         selectedCoins = selectedCoins();
         if (selectedCoins.size() < 2) { warn("Select at least 2 coins."); return; }
 
+        org.example.data.Timeframe tf = timeframeCombo.getValue();
+        int factor = tf.resampleFactor();
+
         Task<MatrixR064> task = new Task<>() {
             @Override protected MatrixR064 call() {
-                updateMessage("Fetching market data…");
-                lastCoinData = dataProvider.fetchAll(selectedCoins);
-                updateMessage("Building return matrix…");
-                return buildMatrix(lastCoinData, selectedCoins);
+                updateMessage("Fetching market data...");
+                List<CoinData> coins = dataProvider.fetchAll(selectedCoins);
+                updateMessage("Building return matrix (" + tf.label() + ")...");
+                MatrixR064 dailyMatrix = buildMatrix(coins, selectedCoins);
+                if (factor > 1) {
+                    updateMessage("Resampling to " + tf.label() + "...");
+                    return org.example.util.MatrixUtils.resample(dailyMatrix, factor);
+                }
+                return dailyMatrix;
             }
         };
-        wireTask(task, "Data ready.", matrix -> {
+        wireTask(task, "Data ready (" + tf.label() + ").", matrix -> {
             returnMatrix = matrix;
-            log("Matrix ready: %d days × %d assets"
-                    .formatted(matrix.countRows(), matrix.countColumns()));
+            log("Matrix ready: %d periods x %d assets (%s)"
+                    .formatted(matrix.countRows(), matrix.countColumns(), tf.label()));
             runBtn.setDisable(false);
         });
         setBusy("Fetching…");
@@ -236,11 +293,13 @@ public class MainController implements Initializable {
         int    win      = windowSpinner.getValue();
         int    hor      = horizonSpinner.getValue();
         double fee      = feeRateSlider.getValue() / 100.0;
+        double rfRate   = riskFreeRateSlider.getValue() / 100.0;
+        double maxTO    = turnoverSlider.getValue();
         var    exec     = zeroCostCheck.isSelected()
                           ? new ZeroCostExecution()
-                          : new SimpleExecution(fee, 0.0005);
+                          : new SimpleExecution(fee, Defaults.SLIPPAGE);
 
-        BacktestEngine engine  = new BacktestEngine(win, hor, exec);
+        BacktestEngine engine  = new BacktestEngine(win, hor, exec, rfRate, maxTO);
         MatrixR064     returns = returnMatrix;
 
         Task<Map<String, BacktestResult>> task = new Task<>() {
@@ -276,6 +335,8 @@ public class MainController implements Initializable {
                 strategySelector.getSelectionModel().select(0);
                 renderPortfolioTab(names.get(0));
             }
+            // Run forecast on fetched data
+            runForecast();
         });
         setBusy("Running strategies…");
         new Thread(task, "strat").start();
@@ -288,9 +349,12 @@ public class MainController implements Initializable {
         lastResults.forEach((name, r) -> {
             List<BigDecimal> w = lastWeights.get(name);
             if (w != null) ex.exportWeights(selectedCoins, w, name);
-            ex.exportBacktest(r.finalEquity(), r.maxDrawdown(), r.sharpe(), name);
+            ex.exportBacktest(r.finalEquity(), r.maxDrawdown(), r.sharpe(),
+                    r.sortino(), r.calmar(), r.var95(), r.cvar95(), name);
         });
-        log("Exported " + lastResults.size() + " strategies → modelOutput.txt");
+        // Also export CSV for external analysis
+        ex.exportCsv(lastWeights, lastResults, selectedCoins);
+        log("Exported " + lastResults.size() + " strategies → modelOutput.txt + CSV");
     }
 
     @FXML
@@ -334,14 +398,51 @@ public class MainController implements Initializable {
             stat("Final Equity",  "%.4f".formatted(r.finalEquity()),           0);
             stat("Max Drawdown",  "%.2f%%".formatted(r.maxDrawdown() * 100),   1);
             stat("Sharpe (ann.)", "%.4f".formatted(r.sharpe()),                2);
-            stat("Avg Turnover",  "%.2f%%".formatted(r.avgTurnover() * 100),   3);
-            stat("Fee Drag",      "%.5f".formatted(r.totalFees()),             4);
+            stat("Sortino (ann.)","%.4f".formatted(r.sortino()),               3);
+            stat("Calmar Ratio",  "%.4f".formatted(r.calmar()),               4);
+            stat("VaR 95%",       "%.2f%%".formatted(r.var95() * 100),        5);
+            stat("CVaR 95%",      "%.2f%%".formatted(r.cvar95() * 100),       6);
+            stat("Avg Turnover",  "%.2f%%".formatted(r.avgTurnover() * 100),   7);
+            stat("Fee Drag",      "%.5f".formatted(r.totalFees()),             8);
+        }
+
+        // Risk contribution: top 3 risk contributors
+        if (w != null && returnMatrix != null) {
+            double[] rc = riskContributions(w, returnMatrix);
+            int[] topIdx = topIndices(rc, Math.min(3, rc.length));
+            StringBuilder sb = new StringBuilder();
+            for (int k = 0; k < topIdx.length; k++) {
+                if (k > 0) sb.append(", ");
+                sb.append(pretty(selectedCoins.get(topIdx[k])))
+                  .append(" ").append("%.1f%%".formatted(rc[topIdx[k]] * 100));
+            }
+            stat("Top Risk Contributors", sb.toString(), 9);
         }
     }
 
     private void renderEquityChart(Map<String, BacktestResult> results) {
         equityChart.getData().clear();
         equityChart.setAnimated(false);
+
+        // Add benchmark curve first (dashed)
+        BacktestResult firstResult = results.values().stream().findFirst().orElse(null);
+        if (firstResult != null && firstResult.benchmarkCurve() != null) {
+            XYChart.Series<Number, Number> bench = new XYChart.Series<>();
+            bench.setName("Benchmark (1/N B&H)");
+            List<Double> curve = firstResult.benchmarkCurve();
+            for (int i = 0; i < curve.size(); i++)
+                bench.getData().add(new XYChart.Data<>(i, curve.get(i)));
+            equityChart.getData().add(bench);
+            Platform.runLater(() -> {
+                try {
+                    equityChart.applyCss(); equityChart.layout();
+                    equityChart.getData().get(0).getNode()
+                            .lookup(".chart-series-line")
+                            .setStyle("-fx-stroke:#888888;-fx-stroke-width:1.5;-fx-stroke-dash-array:6 4;");
+                } catch (Exception ignored) {}
+            });
+        }
+
         int ci = 0;
         for (Map.Entry<String, BacktestResult> e : results.entrySet()) {
             XYChart.Series<Number, Number> s = new XYChart.Series<>();
@@ -372,6 +473,123 @@ public class MainController implements Initializable {
         compareTable.setItems(rows);
     }
 
+    // ── Forecast ─────────────────────────────────────────────────────────────
+
+    private void runForecast() {
+        if (returnMatrix == null || selectedCoins == null) return;
+
+        int horizon = horizonSpinner.getValue();
+        ForecastEngine engine = new ForecastEngine();
+        List<ForecastResult> forecasts = engine.forecast(returnMatrix, horizon, selectedCoins);
+
+        // Render forecast chart
+        forecastChart.getData().clear();
+        forecastChart.setAnimated(false);
+        int ci = 0;
+        for (ForecastResult fr : forecasts) {
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            series.setName(fr.assetName());
+            List<Double> point = fr.pointForecast();
+            for (int h = 0; h < point.size(); h++)
+                series.getData().add(new XYChart.Data<>(h + 1, point.get(h)));
+            forecastChart.getData().add(series);
+            String color = CURVE_COLORS[ci % CURVE_COLORS.length];
+            final int idx = forecastChart.getData().size() - 1;
+            Platform.runLater(() -> {
+                try {
+                    forecastChart.applyCss(); forecastChart.layout();
+                    forecastChart.getData().get(idx).getNode()
+                            .lookup(".chart-series-line")
+                            .setStyle("-fx-stroke:" + color + ";-fx-stroke-width:2;");
+                } catch (Exception ignored) {}
+            });
+            ci++;
+        }
+
+        // Render forecast table
+        ObservableList<ForecastRow> rows = FXCollections.observableArrayList();
+        for (ForecastResult fr : forecasts) {
+            List<Double> point = fr.pointForecast();
+            List<Double> u95   = fr.upper95();
+            List<Double> l95   = fr.lower95();
+            String d1 = point.size() > 0 ? "%+.3f%%".formatted(point.get(0) * 100) : "—";
+            String d3 = point.size() > 2 ? "%+.3f%%".formatted(point.get(2) * 100) : "—";
+            String d7 = point.size() > 6 ? "%+.3f%%".formatted(point.get(6) * 100) : "—";
+            String ciStr = (u95.size() > 6 && l95.size() > 6)
+                    ? "[%.3f%%, %.3f%%]".formatted(l95.get(6) * 100, u95.get(6) * 100)
+                    : "—";
+            rows.add(new ForecastRow(fr.assetName(),
+                    "%.2f%%".formatted(fr.annualizedReturn() * 100),
+                    "%.2f%%".formatted(fr.annualizedVol() * 100),
+                    "%.4f".formatted(fr.trendStrength()),
+                    d1, d3, d7, ciStr));
+        }
+        forecastTable.setItems(rows);
+        log("Forecast generated for " + forecasts.size() + " assets.");
+
+        // Render correlation heatmap
+        renderHeatmap();
+    }
+
+    private void renderHeatmap() {
+        if (returnMatrix == null || selectedCoins == null) return;
+
+        MatrixR064 corr = MatrixUtils.correlationMatrix(returnMatrix);
+        int n = (int) corr.countColumns();
+
+        heatmapGrid.getChildren().clear();
+        heatmapGrid.getColumnConstraints().clear();
+        heatmapGrid.getRowConstraints().clear();
+
+        // Add empty top-left corner
+        heatmapGrid.add(new Label(""), 0, 0);
+
+        // Column headers
+        for (int j = 0; j < n; j++) {
+            Label h = new Label(shortName(selectedCoins.get(j)));
+            h.setStyle("-fx-font-size:9; -fx-text-fill:#ccc; -fx-padding:2 4;");
+            h.setRotate(-45);
+            h.setMinWidth(50);
+            heatmapGrid.add(h, j + 1, 0);
+        }
+
+        // Rows
+        for (int i = 0; i < n; i++) {
+            Label rowLabel = new Label(shortName(selectedCoins.get(i)));
+            rowLabel.setStyle("-fx-font-size:9; -fx-text-fill:#ccc; -fx-padding:0 4;");
+            rowLabel.setMinWidth(50);
+            heatmapGrid.add(rowLabel, 0, i + 1);
+
+            for (int j = 0; j < n; j++) {
+                double v = corr.get(i, j);
+                Label cell = new Label("%.2f".formatted(v));
+                cell.setMinSize(42, 24);
+                cell.setMaxSize(42, 24);
+                cell.setAlignment(javafx.geometry.Pos.CENTER);
+                cell.setStyle("-fx-font-size:9; -fx-background-radius:3; "
+                        + "-fx-background-color:" + corrColor(v) + "; "
+                        + "-fx-text-fill:" + (Math.abs(v) > 0.6 ? "#fff" : "#222") + ";");
+                heatmapGrid.add(cell, j + 1, i + 1);
+            }
+        }
+    }
+
+    private static String corrColor(double v) {
+        // Blue (negative) → White (zero) → Red (positive)
+        if (v >= 0) {
+            int g = (int) (255 * (1 - v));
+            return String.format("#%02x%02x%02x", 255, g, g);
+        } else {
+            int g = (int) (255 * (1 + v));
+            return String.format("#%02x%02x%02x", g, g, 255);
+        }
+    }
+
+    private static String shortName(String id) {
+        String[] parts = id.split("-");
+        return parts[0].substring(0, Math.min(4, parts[0].length())).toUpperCase();
+    }
+
     private void stat(String label, String value, int row) {
         Label l = new Label(label + ":"); l.getStyleClass().add("stat-label");
         Label v = new Label(value);       v.getStyleClass().add("stat-value");
@@ -389,7 +607,9 @@ public class MainController implements Initializable {
             setIdle(ok);
         }));
         task.setOnFailed(e -> Platform.runLater(() -> {
-            String err = task.getException().getMessage();
+            Throwable ex = task.getException();
+            String err = ex != null ? ex.getMessage() : "Unknown error";
+            if (err == null) err = ex != null ? ex.getClass().getSimpleName() : "Unknown error";
             setIdle("Error: " + err);
             log("ERROR: " + err);
             warn(err);
@@ -435,7 +655,9 @@ public class MainController implements Initializable {
                 targetReturnSlider.getValue() / 100.0,
                 momentumLookback.getValue(),
                 volScalingCheck.isSelected(),
-                targetVolSlider.getValue() / 100.0
+                targetVolSlider.getValue() / 100.0,
+                ewmaCovCheck.isSelected(),
+                ewmaLambdaSlider.getValue()
         );
     }
 
@@ -461,6 +683,63 @@ public class MainController implements Initializable {
 
     private static String pct(double v) { return "%+.2f%%".formatted(v * 100); }
 
+    /**
+     * Compute marginal risk contribution for each asset.
+     * RC_i = w_i * (Σw)_i / σ_p
+     */
+    private double[] riskContributions(List<BigDecimal> weights, MatrixR064 returns) {
+        int n = weights.size();
+        int T = (int) returns.countRows();
+
+        // Compute covariance Σ
+        double[][] cov = new double[n][n];
+        double[] mean = new double[n];
+        for (int j = 0; j < n; j++) {
+            double sum = 0;
+            for (int t = 0; t < T; t++) sum += returns.get(t, j);
+            mean[j] = sum / T;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                double s = 0;
+                for (int t = 0; t < T; t++) {
+                    s += (returns.get(t, i) - mean[i]) * (returns.get(t, j) - mean[j]);
+                }
+                cov[i][j] = s / (T - 1);
+                cov[j][i] = cov[i][j];
+            }
+        }
+
+        // Σw
+        double[] sigmaW = new double[n];
+        for (int i = 0; i < n; i++) {
+            double s = 0;
+            for (int j = 0; j < n; j++) s += cov[i][j] * weights.get(j).doubleValue();
+            sigmaW[i] = s;
+        }
+
+        // σ_p = sqrt(w' Σ w)
+        double portVar = 0;
+        for (int i = 0; i < n; i++) portVar += weights.get(i).doubleValue() * sigmaW[i];
+        double portVol = portVar > 0 ? Math.sqrt(portVar) : 1e-10;
+
+        // RC_i = w_i * (Σw)_i / σ_p
+        double[] rc = new double[n];
+        for (int i = 0; i < n; i++) {
+            rc[i] = weights.get(i).doubleValue() * sigmaW[i] / portVol;
+        }
+        return rc;
+    }
+
+    private static int[] topIndices(double[] arr, int k) {
+        Integer[] idx = new Integer[arr.length];
+        for (int i = 0; i < idx.length; i++) idx[i] = i;
+        java.util.Arrays.sort(idx, (a, b) -> Double.compare(Math.abs(arr[b]), Math.abs(arr[a])));
+        int[] result = new int[Math.min(k, idx.length)];
+        for (int i = 0; i < result.length; i++) result[i] = idx[i];
+        return result;
+    }
+
     // ── Row model classes ─────────────────────────────────────────────────────
 
     public static final class WeightRow {
@@ -472,12 +751,16 @@ public class MainController implements Initializable {
     }
 
     public static final class CompareRow {
-        private final String strategyId, finalEquity, maxDrawdown, sharpe, avgTurnover, totalFees;
+        private final String strategyId, finalEquity, maxDrawdown, sharpe, sortino, calmar, var95, cvar95, avgTurnover, totalFees;
         public CompareRow(BacktestResult r) {
             strategyId  = r.strategyId();
             finalEquity = "%.4f".formatted(r.finalEquity());
             maxDrawdown = "%.2f%%".formatted(r.maxDrawdown() * 100);
             sharpe      = "%.3f".formatted(r.sharpe());
+            sortino     = "%.3f".formatted(r.sortino());
+            calmar      = "%.3f".formatted(r.calmar());
+            var95       = "%.2f%%".formatted(r.var95() * 100);
+            cvar95      = "%.2f%%".formatted(r.cvar95() * 100);
             avgTurnover = "%.2f%%".formatted(r.avgTurnover() * 100);
             totalFees   = "%.5f".formatted(r.totalFees());
         }
@@ -485,7 +768,28 @@ public class MainController implements Initializable {
         public String getFinalEquity() { return finalEquity; }
         public String getMaxDrawdown() { return maxDrawdown; }
         public String getSharpe()      { return sharpe;      }
+        public String getSortino()     { return sortino;     }
+        public String getCalmar()      { return calmar;      }
+        public String getVar95()       { return var95;       }
+        public String getCvar95()      { return cvar95;      }
         public String getAvgTurnover() { return avgTurnover; }
         public String getTotalFees()   { return totalFees;   }
+    }
+
+    public static final class ForecastRow {
+        private final String assetName, annReturn, annVol, trend, day1, day3, day7, ci95;
+        public ForecastRow(String name, String annRet, String annVol, String trend,
+                           String d1, String d3, String d7, String ci) {
+            this.assetName = name; this.annReturn = annRet; this.annVol = annVol;
+            this.trend = trend; this.day1 = d1; this.day3 = d3; this.day7 = d7; this.ci95 = ci;
+        }
+        public String getAssetName() { return assetName; }
+        public String getAnnReturn() { return annReturn; }
+        public String getAnnVol()    { return annVol;    }
+        public String getTrend()     { return trend;     }
+        public String getDay1()      { return day1;      }
+        public String getDay3()      { return day3;      }
+        public String getDay7()      { return day7;      }
+        public String getCi95()      { return ci95;      }
     }
 }

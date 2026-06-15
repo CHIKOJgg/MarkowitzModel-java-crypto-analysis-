@@ -3,7 +3,7 @@ package org.example.model;
 import java.util.List;
 
 /**
- * Immutable walk-forward backtest result.
+ * Immutable walk-forward backtest result with comprehensive risk metrics.
  */
 public record BacktestResult(
         String       strategyId,
@@ -11,8 +11,13 @@ public record BacktestResult(
         double       finalEquity,
         double       maxDrawdown,
         double       sharpe,
+        double       sortino,
+        double       calmar,
+        double       var95,
+        double       cvar95,
         double       avgTurnover,
-        double       totalFees
+        double       totalFees,
+        List<Double> benchmarkCurve
 ) {
     public List<Double> returnSeries() {
         if (equityCurve.size() < 2) return List.of();
@@ -24,8 +29,9 @@ public record BacktestResult(
 
     public String summary() {
         return String.format(
-                "%-40s  Eq=%.4f  MaxDD=%.1f%%  Sharpe=%.2f  AvgTO=%.2f%%  Fees=%.4f",
+                "%-40s  Eq=%.4f  MaxDD=%.1f%%  Sharpe=%.2f  Sortino=%.2f  Calmar=%.2f  VaR95=%.2f%%  CVaR95=%.2f%%  AvgTO=%.2f%%  Fees=%.4f",
                 strategyId, finalEquity, maxDrawdown * 100,
-                sharpe, avgTurnover * 100, totalFees);
+                sharpe, sortino, calmar, var95 * 100, cvar95 * 100,
+                avgTurnover * 100, totalFees);
     }
 }

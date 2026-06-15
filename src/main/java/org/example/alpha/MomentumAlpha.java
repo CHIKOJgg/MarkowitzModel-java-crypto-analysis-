@@ -1,5 +1,6 @@
 package org.example.alpha;
 
+import org.example.Defaults;
 import org.ojalgo.matrix.MatrixR064;
 
 /**
@@ -20,8 +21,8 @@ public class MomentumAlpha implements AlphaModel {
         this.shortPenalty = shortPenalty;
     }
 
-    public MomentumAlpha(int lookback) { this(lookback, 0.02); }
-    public MomentumAlpha()             { this(20, 0.02); }
+    public MomentumAlpha(int lookback) { this(lookback, Defaults.SHORT_PENALTY); }
+    public MomentumAlpha()             { this(Defaults.MOMENTUM_LOOKBACK, Defaults.SHORT_PENALTY); }
 
     // ── AlphaModel ────────────────────────────────────────────────────────────
 
