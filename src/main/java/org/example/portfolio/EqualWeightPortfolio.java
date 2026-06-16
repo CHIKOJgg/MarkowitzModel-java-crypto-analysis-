@@ -35,7 +35,7 @@ public class EqualWeightPortfolio implements PortfolioModel {
         for (int j = 0; j < cols; j++) {
             double w = baseWeight;
             if (signalDirected && mu.get(0, j) < 0) {
-                w = -baseWeight * 0.5;  // half-weight short
+                w = -baseWeight;  // symmetric short
             }
             weights.add(BigDecimal.valueOf(w));
         }

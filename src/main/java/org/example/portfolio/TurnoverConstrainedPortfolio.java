@@ -26,6 +26,7 @@ public class TurnoverConstrainedPortfolio implements PortfolioModel {
 
     private final PortfolioModel inner;
     private final double         maxTurnover;  // max total turnover per rebalance (e.g. 0.5 = 50%)
+    private List<BigDecimal>     prevWeights;  // tracked internally for standalone use
 
     public TurnoverConstrainedPortfolio(PortfolioModel inner, double maxTurnover) {
         this.inner       = inner;
@@ -35,10 +36,9 @@ public class TurnoverConstrainedPortfolio implements PortfolioModel {
     @Override
     public List<BigDecimal> allocate(MatrixR064 returns, MatrixR064 mu) {
         List<BigDecimal> optimalWeights = inner.allocate(returns, mu);
-
-        // No previous weights on first call — return as-is
-        // (previous weights are tracked externally in BacktestEngine)
-        return optimalWeights;
+        List<BigDecimal> result = constrain(prevWeights, optimalWeights, maxTurnover);
+        prevWeights = new ArrayList<>(result);
+        return result;
     }
 
     /**

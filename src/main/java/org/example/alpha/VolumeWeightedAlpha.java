@@ -68,18 +68,21 @@ public class VolumeWeightedAlpha implements AlphaModel {
                     ? obv / (totalVol * 0.5)
                     : 0;
 
-            double sumMom = 0, sumVol = 0, sumMomVol = 0, sumVolSq = 0;
+            double sumMom = 0, sumVol = 0, sumMomVol = 0, sumVolSq = 0, sumMomSq = 0;
             for (int i = 0; i < count; i++) {
                 sumMom    += recentMom[i];
                 sumVol    += recentVol[i];
                 sumMomVol += recentMom[i] * recentVol[i];
                 sumVolSq  += recentVol[i] * recentVol[i];
+                sumMomSq  += recentMom[i] * recentMom[i];
             }
             double meanMom = sumMom / count;
             double meanVol = sumVol / count;
             double covMomVol = sumMomVol / count - meanMom * meanVol;
             double varVol = Math.max(sumVolSq / count - meanVol * meanVol, 1e-10);
-            double volPriceCorr = covMomVol / (Math.sqrt(varVol) * Math.max(Math.abs(meanMom), 1e-10));
+            double varMom = Math.max(sumMomSq / count - meanMom * meanMom, 1e-10);
+            double volPriceCorr = covMomVol / (Math.sqrt(varVol) * Math.sqrt(varMom));
+            volPriceCorr = Math.max(-1.0, Math.min(1.0, volPriceCorr));
 
             double divergence = 0;
             if (count > 2) {
@@ -111,7 +114,7 @@ public class VolumeWeightedAlpha implements AlphaModel {
             }
             double scaledSignal = maxAbs > 1e-10 ? rawSignal * (maxAbs * 10) : rawSignal;
 
-            double signal = Math.max(-1.0, Math.min(1.0, scaledSignal));
+            double signal = scaledSignal;
             if (signal < 0) signal -= shortPenalty;
             mu[0][j] = Math.max(-1.0, Math.min(1.0, signal));
         }

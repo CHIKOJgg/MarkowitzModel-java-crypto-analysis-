@@ -104,13 +104,18 @@ class MatrixUtilsTest {
     }
 
     @Test
-    void ewmaCovarianceWithLambda1EqualsLastObservation() {
+    void ewmaCovarianceWithLambda1FreezesAtWarmupEstimate() {
         double[][] data = {{0.01, 0.02}, {0.03, 0.04}};
         var returns = org.ojalgo.matrix.MatrixR064.FACTORY.rows(data);
         var cov = MatrixUtils.ewmaCovariance(returns, 1.0);
 
-        assertEquals(0.01 * 0.01, cov.get(0, 0), 1e-10);
-        assertEquals(0.01 * 0.02, cov.get(0, 1), 1e-10);
+        // With lambda=1, EWMA stays at the warmup sample covariance
+        double mu0 = (0.01 + 0.03) / 2;
+        double mu1 = (0.02 + 0.04) / 2;
+        double var0 = ((0.01 - mu0) * (0.01 - mu0) + (0.03 - mu0) * (0.03 - mu0)) / 1;
+        double cov01 = ((0.01 - mu0) * (0.02 - mu1) + (0.03 - mu0) * (0.04 - mu1)) / 1;
+        assertEquals(var0, cov.get(0, 0), 1e-10);
+        assertEquals(cov01, cov.get(0, 1), 1e-10);
     }
 
     @Test

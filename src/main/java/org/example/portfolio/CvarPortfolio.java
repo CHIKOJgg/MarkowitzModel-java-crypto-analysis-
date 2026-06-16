@@ -98,23 +98,16 @@ public class CvarPortfolio implements PortfolioModel {
         int varIdx = (int) Math.floor(T * (1 - confidenceLevel));
         double VaR = -sorted[Math.min(varIdx, T - 1)];
 
-        // Compute CVaR and identify tail scenarios
-        double cvar = 0;
-        int tailCount = 0;
+        // Identify tail scenarios (where loss exceeds VaR)
         boolean[] inTail = new boolean[T];
         for (int t = 0; t < T; t++) {
-            if (-portReturns[t] > VaR) {
-                cvar += -portReturns[t];
-                inTail[t] = true;
-                tailCount++;
-            }
+            inTail[t] = -portReturns[t] > VaR;
         }
-        cvar = tailCount > 0 ? cvar / tailCount : VaR;
 
-        // Gradient: d(CVaR)/dw_j ≈ -1/tailCount * Σ_{t in tail} r_j(t)
-        // To MINIMIZE CVaR, we move OPPOSITE to the gradient.
-        // Since d(CVaR)/dw_j is negative for assets with good tail returns,
-        // the negative gradient (what we add to weights) is positive for good assets.
+        // Gradient: d(CVaR)/dw_j = 1/(T*(1-α)) * Σ_{t in tail} -r_j(t)
+        // To MINIMIZE CVaR, gradient ascent uses the negative gradient.
+        // Assets with good tail returns (positive in tail) have negative gradient
+        // contribution, so they receive positive weight updates.
         double[] grad = new double[n];
         double scale = 1.0 / (T * (1 - confidenceLevel));
         for (int j = 0; j < n; j++) {

@@ -150,20 +150,36 @@ public final class MatrixUtils {
         int rows = (int) returns.countRows();
         int cols = (int) returns.countColumns();
 
-        // Initialize with the first observation
+        // Warmup: use sample covariance from first warmup periods to avoid
+        // biasing the EWMA with a single uncentered observation.
+        int warmup = Math.min(rows, Math.max(2, Math.min(rows / 2, cols * 2)));
         double[][] cov = new double[cols][cols];
-        for (int i = 0; i < cols; i++) {
-            double r0 = returns.get(0, i);
-            cov[i][i] = r0 * r0;
-            for (int j = i + 1; j < cols; j++) {
-                double r0j = returns.get(0, j);
-                cov[i][j] = r0 * r0j;
-                cov[j][i] = cov[i][j];
+        if (warmup > 1) {
+            double[] means = new double[cols];
+            for (int t = 0; t < warmup; t++) {
+                for (int i = 0; i < cols; i++) means[i] += returns.get(t, i);
+            }
+            for (int i = 0; i < cols; i++) means[i] /= warmup;
+            for (int t = 0; t < warmup; t++) {
+                for (int i = 0; i < cols; i++) {
+                    double ri = returns.get(t, i) - means[i];
+                    for (int j = i; j < cols; j++) {
+                        double rj = returns.get(t, j) - means[j];
+                        cov[i][j] += ri * rj;
+                    }
+                }
+            }
+            int denom = warmup - 1;
+            for (int i = 0; i < cols; i++) {
+                for (int j = i; j < cols; j++) {
+                    cov[i][j] /= denom;
+                    cov[j][i] = cov[i][j];
+                }
             }
         }
 
-        // Recurse: Σ_t = (1-λ) * r_t * r_t' + λ * Σ_{t-1}
-        for (int t = 1; t < rows; t++) {
+        // EWMA recursion over remaining periods
+        for (int t = warmup; t < rows; t++) {
             for (int i = 0; i < cols; i++) {
                 double ri = returns.get(t, i);
                 for (int j = i; j < cols; j++) {

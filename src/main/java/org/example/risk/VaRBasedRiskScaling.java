@@ -59,7 +59,7 @@ public class VaRBasedRiskScaling implements RiskModel {
                 ? (sumR2 / rows - mean * mean) * rows / (rows - 1)
                 : 0;
         double sigma = var > 0 ? Math.sqrt(var) : 0;
-        return 1.645 * sigma;
+        return Math.max(0, 1.645 * sigma - mean);
     }
 
     private double computeMaxScale(List<BigDecimal> weights) {
