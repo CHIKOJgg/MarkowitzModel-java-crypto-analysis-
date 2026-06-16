@@ -49,11 +49,10 @@ public class VolumeWeightedAlpha implements AlphaModel {
                 double vol = Math.abs(r);
 
                 if (t > 0) {
-                    double prev = returns.get(t - 1, j);
-                    if (r > prev) {
+                    if (r > 0) {
                         obv += vol;
                         cumVolUp += vol;
-                    } else if (r < prev) {
+                    } else if (r < 0) {
                         obv -= vol;
                         cumVolDown += vol;
                     }

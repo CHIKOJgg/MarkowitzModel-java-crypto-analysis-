@@ -30,7 +30,8 @@ public class PortfolioRiskConstraint implements Constraint {
 
     @Override
     public List<BigDecimal> apply(List<BigDecimal> weights) {
-        return weights;
+        throw new UnsupportedOperationException(
+                "PortfolioRiskConstraint requires the returns matrix. Use apply(weights, returns) instead.");
     }
 
     @Override

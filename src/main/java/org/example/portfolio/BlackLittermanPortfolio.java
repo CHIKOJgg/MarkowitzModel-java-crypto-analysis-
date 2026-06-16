@@ -180,13 +180,13 @@ public class BlackLittermanPortfolio implements PortfolioModel {
             constrained.add(BigDecimal.valueOf(w));
         }
 
-        // Re-normalize if clamping changed the sum
+        // Re-normalize if clamping changed the sum (may slightly violate bounds)
         double sumC = constrained.stream().mapToDouble(BigDecimal::doubleValue).sum();
         if (Math.abs(sumC) > 1e-10 && Math.abs(sumC - 1.0) > 1e-6) {
             double scale = 1.0 / sumC;
-            constrained = constrained.stream()
+            constrained = new ArrayList<>(constrained.stream()
                     .map(w -> w.multiply(BigDecimal.valueOf(scale)))
-                    .toList();
+                    .toList());
         }
 
         return constrained;

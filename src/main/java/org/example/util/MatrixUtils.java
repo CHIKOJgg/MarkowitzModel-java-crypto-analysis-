@@ -12,12 +12,19 @@ public final class MatrixUtils {
     // ── Covariance ────────────────────────────────────────────────────────────
 
     /**
-     * Ledoit-Wolf-style diagonal shrinkage: Sigma_shrunk = lambda*Sigma + (1-lambda)*I
+     * Ledoit-Wolf-style diagonal shrinkage toward a constant-variance target:
+     * Sigma_shrunk = lambda*Sigma + (1-lambda)*target*I
+     * where target = tr(Sigma)/n (the average variance across all assets).
+     * This preserves the empirical variance scale instead of inflating variances
+     * toward 1.0 as the naive identity-target would.
      */
     public static MatrixR064 shrink(MatrixR064 cov, double lambda) {
         int n = (int) cov.countRows();
-        MatrixR064 eye = MatrixR064.FACTORY.makeEye(n, n);
-        return cov.multiply(lambda).add(eye.multiply(1.0 - lambda));
+        double trace = 0;
+        for (int i = 0; i < n; i++) trace += cov.get(i, i);
+        double muTarget = trace / n;
+        MatrixR064 target = MatrixR064.FACTORY.makeEye(n, n).multiply(muTarget);
+        return cov.multiply(lambda).add(target.multiply(1.0 - lambda));
     }
 
     /**

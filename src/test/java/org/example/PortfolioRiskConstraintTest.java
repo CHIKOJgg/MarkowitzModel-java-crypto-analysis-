@@ -274,7 +274,6 @@ class PortfolioRiskConstraintTest {
         var weights = List.of(BigDecimal.valueOf(0.4), BigDecimal.valueOf(0.3),
                 BigDecimal.valueOf(0.2), BigDecimal.valueOf(0.1));
         var risk = new DrawdownBasedRiskScaling();
-        risk.reset();
         var adjusted = risk.adjust(weights, returns);
         assertEquals(4, adjusted.size());
         adjusted.forEach(w -> assertFalse(Double.isNaN(w.doubleValue())));

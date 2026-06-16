@@ -38,8 +38,11 @@ public class StressTestEngine {
         int assets = (int) returns.countColumns();
         int days   = (int) returns.countRows();
 
-        // Compute daily shock: distribute total shock evenly across duration
-        double dailyShock = -scenario.shockMagnitude() / scenario.durationDays();
+        // Compute multiplicative daily shock factor.
+        // After durationDays of daily compounding, total shock = shockMagnitude:
+        // (1 + dailyShock)^durationDays - 1 = shockMagnitude
+        // dailyShock = exp(ln(1 - shockMagnitude) / durationDays) - 1
+        double dailyShock = Math.pow(1.0 - scenario.shockMagnitude(), 1.0 / scenario.durationDays()) - 1.0;
 
         // Build the equity path under stress
         List<Double> equityPath = new ArrayList<>();
@@ -53,9 +56,9 @@ public class StressTestEngine {
             double dayReturn = 0.0;
             for (int a = 0; a < assets; a++) {
                 double assetReturn = returns.get(t, a);
-                // Apply shock during the scenario window
+                // Apply multiplicative shock during the scenario window
                 if (t < scenario.durationDays()) {
-                    assetReturn += dailyShock;
+                    assetReturn = assetReturn + dailyShock + assetReturn * dailyShock;
                 }
                 dayReturn += assetReturn * weights.get(a).doubleValue();
             }

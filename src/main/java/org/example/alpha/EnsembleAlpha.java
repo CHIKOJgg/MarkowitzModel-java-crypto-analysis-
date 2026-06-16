@@ -35,10 +35,6 @@ public class EnsembleAlpha implements AlphaModel {
     public MatrixR064 predict(MatrixR064 returns) {
         int n = (int) returns.countColumns();
 
-        // Compute the most recent actual return vector (last row)
-        double[] lastReturn = new double[n];
-        for (int j = 0; j < n; j++) lastReturn[j] = returns.get((int) returns.countRows() - 1, j);
-
         // Evaluate each sub-alpha
         double totalWeight = 0;
         double[][] weightedSignals = new double[alphas.size()][n];
@@ -75,7 +71,8 @@ public class EnsembleAlpha implements AlphaModel {
     private double computeAccuracy(AlphaModel alpha, MatrixR064 returns) {
         int rows = (int) returns.countRows();
         int cols = (int) returns.countColumns();
-        int start = Math.max(0, rows - evalWindow - 1);
+        int minTrain = Math.max(5, evalWindow);
+        int start = Math.max(1, rows - minTrain - 1);
         int end = rows - 1;
         if (end <= start) return 0;
 
@@ -83,17 +80,21 @@ public class EnsembleAlpha implements AlphaModel {
         double[] actualDirs = new double[end - start];
         int idx = 0;
         for (int t = start; t < end; t++) {
-            MatrixR064 window = MatrixUtils.sliceRows(returns, t, t + 1);
+            MatrixR064 window;
+            try {
+                window = MatrixUtils.sliceRows(returns, 0, t);
+            } catch (Exception e) {
+                continue;
+            }
+            if ((int) window.countRows() < 2) continue;
             MatrixR064 pred;
             try {
                 pred = alpha.predict(window);
             } catch (Exception e) {
                 continue;
             }
-            // Average predicted direction across assets
             double predDir = 0;
             for (int j = 0; j < cols; j++) predDir += pred.get(0, j);
-            // Average actual return
             double actualDir = 0;
             for (int j = 0; j < cols; j++) actualDir += returns.get(t, j);
             predDirs[idx] = predDir;

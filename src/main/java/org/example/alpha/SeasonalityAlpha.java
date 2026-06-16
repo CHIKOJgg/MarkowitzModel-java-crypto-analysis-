@@ -3,54 +3,55 @@ package org.example.alpha;
 import org.ojalgo.matrix.MatrixR064;
 
 /**
- * Generates alpha signals based on crypto seasonality patterns.
+ * Generates alpha signals based on day-of-week periodicity detected from data.
  *
- * <p>Captures known effects:
- * <ul>
- *   <li>Weekend effect — crypto tends to be weaker on weekends</li>
- *   <li>Month-end effect — slight positive bias around month-end</li>
- *   <li>Monday effect — positive Monday bias</li>
- * </ul>
- *
- * <p>Since the exact calendar date isn't available from returns alone,
- * the signal uses position-within-the-series as a proxy, cycling
- * through a 7-day pattern.
+ * <p>Instead of relying on absolute calendar dates (which are unavailable from
+ * the return matrix alone), this model detects 7-day cycles directly from the
+ * return series. The last row is treated as "today"; returns are grouped into
+ * 7 daily buckets going backwards. The signal is the deviation of today's
+ * average return from the overall weekly average.
  */
 public class SeasonalityAlpha implements AlphaModel {
-
-    private final double weekendPenalty;
-    private final double monthEndBonus;
-
-    /**
-     * @param weekendPenalty  signal reduction for weekend days (e.g. 0.005)
-     * @param monthEndBonus   signal boost for month-end (e.g. 0.003)
-     */
-    public SeasonalityAlpha(double weekendPenalty, double monthEndBonus) {
-        this.weekendPenalty = weekendPenalty;
-        this.monthEndBonus  = monthEndBonus;
-    }
-
-    public SeasonalityAlpha() {
-        this(0.005, 0.003);
-    }
 
     @Override
     public MatrixR064 predict(MatrixR064 returns) {
         int rows = (int) returns.countRows();
         int cols = (int) returns.countColumns();
+        if (rows < 7) {
+            double[] neutral = new double[cols];
+            return MatrixR064.FACTORY.rows(new double[][]{neutral});
+        }
 
-        // Determine "day of week" from row position
-        int dayOfWeek = rows % 7;  // 0=Sun, 1=Mon, ..., 6=Sat
-        boolean isWeekend = dayOfWeek == 0 || dayOfWeek == 6;
-        boolean isMonthEnd = rows % 30 >= 27;  // approximate last few days of month
+        // Group returns by day-of-week position (bucket 0 = most recent day)
+        double[] dowSum = new double[7];
+        int[] dowCount = new int[7];
+        for (int i = 0; i < rows; i++) {
+            int dow = i % 7;
+            for (int j = 0; j < cols; j++) {
+                dowSum[dow] += returns.get(rows - 1 - i, j);
+                dowCount[dow]++;
+            }
+        }
 
-        double baseSignal = isWeekend ? -weekendPenalty : 0.005;
-        if (isMonthEnd) baseSignal += monthEndBonus;
+        double[] dowAvg = new double[7];
+        double crossAvg = 0;
+        int validDays = 0;
+        for (int d = 0; d < 7; d++) {
+            if (dowCount[d] > 0) {
+                dowAvg[d] = dowSum[d] / dowCount[d];
+                crossAvg += dowAvg[d];
+                validDays++;
+            }
+        }
+        crossAvg /= validDays;
 
-        double[] signal = new double[cols];
-        for (int j = 0; j < cols; j++) signal[j] = baseSignal;
+        // Signal = today's day-of-week effect vs weekly average, capped
+        double raw = dowAvg[0] - crossAvg;
+        double signal = Math.max(-0.01, Math.min(0.01, raw));
 
-        return MatrixR064.FACTORY.rows(new double[][]{signal});
+        double[] out = new double[cols];
+        for (int j = 0; j < cols; j++) out[j] = signal;
+        return MatrixR064.FACTORY.rows(new double[][]{out});
     }
 
     @Override

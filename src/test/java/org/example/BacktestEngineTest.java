@@ -112,7 +112,7 @@ class BacktestEngineTest {
         var strategy = makeConstantStrategy(assets);
         var result = engine.run(returns, strategy, null);
 
-        assertEquals(86, result.equityCurve().size());
+        assertEquals(90, result.equityCurve().size());
     }
 
     @Test
@@ -125,7 +125,7 @@ class BacktestEngineTest {
         var strategy = makeConstantStrategy(assets);
         var result = engine.run(returns, strategy, null);
 
-        assertEquals(86, result.benchmarkCurve().size());
+        assertEquals(90, result.benchmarkCurve().size());
     }
 
     @Test

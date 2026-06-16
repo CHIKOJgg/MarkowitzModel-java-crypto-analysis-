@@ -51,16 +51,25 @@ public class RiskParityPortfolio implements PortfolioModel {
             invSum     += 1.0 / vols[j];
         }
 
-        List<BigDecimal> weights = new ArrayList<>(cols);
+        double[] raw = new double[cols];
         for (int j = 0; j < cols; j++) {
             double w = (1.0 / vols[j]) / invSum;
-
-            // Optionally flip sign based on alpha signal direction
             if (respectSignSign && mu.get(0, j) < 0) {
-                w = -w * 0.5;   // half-sized short for negative signals
+                w = -w * 0.5;
             }
-            weights.add(BigDecimal.valueOf(w));
+            raw[j] = w;
         }
+
+        // Renormalize so Σ|w| = 1 (risk parity invariant)
+        double absSum = 0;
+        for (int j = 0; j < cols; j++) absSum += Math.abs(raw[j]);
+        if (absSum > 1e-12) {
+            double scale = 1.0 / absSum;
+            for (int j = 0; j < cols; j++) raw[j] *= scale;
+        }
+
+        List<BigDecimal> weights = new ArrayList<>(cols);
+        for (int j = 0; j < cols; j++) weights.add(BigDecimal.valueOf(raw[j]));
         return weights;
     }
 

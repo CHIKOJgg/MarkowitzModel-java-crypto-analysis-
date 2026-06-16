@@ -476,6 +476,22 @@ public class MainController implements Initializable {
 
     private String tr(String key, Object... args) { return loc.get(key, args); }
 
+    /**
+     * Like tr() but never returns a missing-key marker or throws.
+     * LocalizationManager signals missing keys by prepending '!'.
+     * This helper falls back to {@code fallback} in all such cases.
+     */
+    private String safeTr(String key, String fallback) {
+        try {
+            String v = loc.get(key);
+            if (v == null || v.isBlank() || v.startsWith("!") || v.equals(key))
+                return fallback;
+            return v;
+        } catch (Exception __) {
+            return fallback;
+        }
+    }
+
     // ── Handlers ──────────────────────────────────────────────────────────────
 
     @FXML
@@ -587,8 +603,8 @@ public class MainController implements Initializable {
         double maxTO    = turnoverSlider.getValue();
         int    rebFreq  = rebalanceSpinner.getValue();
         var    exec     = zeroCostCheck.isSelected()
-                          ? new ZeroCostExecution()
-                          : new SimpleExecution(fee, Defaults.SLIPPAGE);
+                ? new ZeroCostExecution()
+                : new SimpleExecution(fee, Defaults.SLIPPAGE);
 
         BacktestEngine engine  = new BacktestEngine(win, hor, exec, rfRate, maxTO, rebFreq);
         MatrixR064     returns = returnMatrix;
@@ -874,16 +890,51 @@ public class MainController implements Initializable {
         ObservableList<PieChart.Data> pie  = FXCollections.observableArrayList();
         ObservableList<WeightRow>     rows = FXCollections.observableArrayList();
 
+        // ── Compute exposures ────────────────────────────────────────────────
+        // For long-only:  cashPct = 1 − longExposure
+        // For long-short: the user has $100. Longs consume capital, shorts
+        //   consume collateral (margin). Both draw from the same $100.
+        //   cashPct = 1 − grossExposure  (= 1 − longExp − |shortExp|)
+        //   If leverage > 1: grossExposure > 1 → cashPct = 0 (borrowed capital).
+        //   The pie always sums to 100 %: Σ|w_i| + cashPct = 1.
+        double longExposure  = 0.0;
+        double shortExposure = 0.0; // stored as positive magnitude
+        for (BigDecimal bd : w) {
+            double v = bd.doubleValue();
+            if (v > 0) longExposure  += v;
+            else        shortExposure += Math.abs(v);
+        }
+        double grossExposure = longExposure + shortExposure;
+        double netExposure   = longExposure - shortExposure;
+        double cashPct       = Math.max(0.0, 1.0 - grossExposure);
+        // Is the strategy running with leverage (gross > 100 %)?
+        boolean isLeveraged  = grossExposure > 1.005;
+
+        // ── Asset rows ───────────────────────────────────────────────────────
+        // Pie slice size = |weight| so the chart represents capital allocation.
+        // Table shows signed weight + direction label.
+        String longDir  = safeTr("weight.long",  "LONG");
+        String shortDir = safeTr("weight.short", "SHORT");
         for (int i = 0; i < selectedCoins.size(); i++) {
             double v = w.get(i).doubleValue();
             String label = pretty(selectedCoins.get(i));
             if (Math.abs(v) > 0.005)
-                pie.add(new PieChart.Data(label + " " + pct(v), Math.abs(v * 100)));
-            rows.add(new WeightRow(label, pct(v), v >= 0 ? tr("weight.long") : tr("weight.short")));
+                pie.add(new PieChart.Data(label + " " + pct(v), Math.abs(v) * 100));
+            rows.add(new WeightRow(label, pct(v), v >= 0 ? longDir : shortDir));
         }
+
+        // ── Cash row ─────────────────────────────────────────────────────────
+        String cashLabel = safeTr("weight.cash", "Cash");
+        if (cashPct > 0.005) {
+            String cashPctStr = "+%.2f%%".formatted(cashPct * 100);
+            pie.add(new PieChart.Data(cashLabel + " " + cashPctStr, cashPct * 100));
+            rows.add(new WeightRow(cashLabel, cashPctStr, cashLabel));
+        }
+
         weightsChart.setData(pie);
         weightsTable.setItems(rows);
 
+        // ── Stats panel ──────────────────────────────────────────────────────
         statsGrid.getChildren().clear();
         if (r != null) {
             stat(tr("stat.finalEquity"),  "%.4f".formatted(r.finalEquity()),           0);
@@ -896,6 +947,14 @@ public class MainController implements Initializable {
             stat(tr("stat.avgTurnover"),  "%.2f%%".formatted(r.avgTurnover() * 100),   7);
             stat(tr("stat.feeDrag"),      "%.5f".formatted(r.totalFees()),             8);
         }
+        // ── Allocation breakdown (always visible) ────────────────────────────
+        int statRow = r != null ? 9 : 0;
+        stat("Long:",  "+%.2f%%".formatted(longExposure  * 100), statRow++);
+        if (shortExposure > 0.0005)
+            stat("Short:", "-%.2f%%".formatted(shortExposure * 100), statRow++);
+        stat(cashLabel + ":", "+%.2f%%".formatted(cashPct * 100), statRow++);
+        if (isLeveraged)
+            stat("Leverage:", "%.2fx (%.0f%%)".formatted(grossExposure, grossExposure * 100), statRow++);
 
         // Risk contribution: top 3 risk contributors
         if (w != null && returnMatrix != null) {
@@ -905,9 +964,9 @@ public class MainController implements Initializable {
             for (int k = 0; k < topIdx.length; k++) {
                 if (k > 0) sb.append(", ");
                 sb.append(pretty(selectedCoins.get(topIdx[k])))
-                  .append(" ").append("%.1f%%".formatted(rc[topIdx[k]] * 100));
+                        .append(" ").append("%.1f%%".formatted(rc[topIdx[k]] * 100));
             }
-            stat(tr("stat.topRiskContrib"), sb.toString(), 9);
+            stat(tr("stat.topRiskContrib"), sb.toString(), r != null ? 11 : 1);
         }
     }
 
@@ -1509,7 +1568,7 @@ public class MainController implements Initializable {
         List<Double> rets = result.returnSeries();
         double portReturn = rets.isEmpty() ? 0.0 : rets.stream().mapToDouble(x -> x).average().orElse(0.0);
         double benchReturn = result.benchmarkCurve().isEmpty() ? 0.0
-            : (result.benchmarkCurve().get(result.benchmarkCurve().size()-1) - 1.0) / Math.max(1, result.benchmarkCurve().size());
+                : (result.benchmarkCurve().get(result.benchmarkCurve().size()-1) - 1.0) / Math.max(1, result.benchmarkCurve().size());
 
         attributionGrid.getChildren().clear();
         Label allLabel = new Label(tr("attr.allocationEffect")); allLabel.getStyleClass().add("stat-label");

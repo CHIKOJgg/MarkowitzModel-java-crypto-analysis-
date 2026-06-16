@@ -16,9 +16,10 @@ class MatrixUtilsTest {
         // off-diagonal should be lambda * original
         assertEquals(0.7 * 0.5, shrunk.get(0, 1), 1e-10);
         assertEquals(0.7 * 0.5, shrunk.get(1, 0), 1e-10);
-        // diagonal should be lambda * original + (1-lambda) * 1
-        assertEquals(0.7 * 1.0 + 0.3, shrunk.get(0, 0), 1e-10);
-        assertEquals(0.7 * 2.0 + 0.3, shrunk.get(1, 1), 1e-10);
+        // diagonal should be lambda * original + (1-lambda) * mean(diag)
+        double muTarget = (1.0 + 2.0) / 2.0;
+        assertEquals(0.7 * 1.0 + 0.3 * muTarget, shrunk.get(0, 0), 1e-10);
+        assertEquals(0.7 * 2.0 + 0.3 * muTarget, shrunk.get(1, 1), 1e-10);
     }
 
     @Test

@@ -53,22 +53,23 @@ public class BacktestEngine {
 
     public BacktestEngine(int window, int horizon, ExecutionModel execution,
                           double riskFreeRate, double maxTurnover) {
-        this(window, horizon, execution, riskFreeRate, maxTurnover, 1);
+        this(window, horizon, execution, riskFreeRate, maxTurnover, horizon);
     }
 
     public BacktestEngine(int window, int horizon, ExecutionModel execution,
                           double riskFreeRate) {
-        this(window, horizon, execution, riskFreeRate, 0.0, 1);
+        this(window, horizon, execution, riskFreeRate, 0.0, horizon);
     }
 
     public BacktestEngine(int window, int horizon, ExecutionModel execution) {
-        this(window, horizon, execution, 0.0, 0.0, 1);
+        this(window, horizon, execution, 0.0, 0.0, horizon);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
      * Run a single strategy and return its backtest statistics.
+     * Produces a <b>daily</b> equity curve for accurate drawdown, VaR, CVaR, etc.
      */
     public BacktestResult run(MatrixR064 returns, Strategy strategy,
                               BiConsumer<String, String> progress) {
@@ -92,13 +93,11 @@ public class BacktestEngine {
         for (int t = window; t <= totalRows - horizon; t += rebalanceFreq) {
             int testEnd = Math.min(t + horizon, totalRows);
             MatrixR064 train = sliceRows(returns, t - window, t);
-            MatrixR064 test  = sliceRows(returns, t, testEnd);
 
             // 1. Detect regime for current training window
             int regimeIdx = t - regimeWindow;
             String regime = (regimeIdx >= 0 && regimeIdx < allRegimes.size())
                     ? allRegimes.get(regimeIdx) : "NORMAL";
-            regimeHistory.add(regime);
 
             // 2. Build portfolio weights from the training window
             List<BigDecimal> weights = strategy.build(train);
@@ -118,10 +117,17 @@ public class BacktestEngine {
                 totalTO += turnover(prevWeights, weights);
             }
 
-            // 6. Compound daily PnL over the test window
-            double pnl = simulate(test, weights);
-            equity *= (1.0 + pnl);
-            equityCurve.add(equity);
+            // 6. Simulate day by day over the test window (daily equity curve)
+            int assets = (int) returns.countColumns();
+            for (int d = t; d < testEnd; d++) {
+                double dayRet = 0.0;
+                for (int a = 0; a < assets; a++) {
+                    dayRet += returns.get(d, a) * weights.get(a).doubleValue();
+                }
+                equity *= (1.0 + dayRet);
+                equityCurve.add(equity);
+                regimeHistory.add(regime);
+            }
 
             prevWeights = weights;
             steps++;
@@ -172,21 +178,6 @@ public class BacktestEngine {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private double simulate(MatrixR064 test, List<BigDecimal> weights) {
-        int days   = (int) test.countRows();
-        int assets = (int) test.countColumns();
-
-        double growth = 1.0;
-        for (int d = 0; d < days; d++) {
-            double dayRet = 0.0;
-            for (int a = 0; a < assets; a++) {
-                dayRet += test.get(d, a) * weights.get(a).doubleValue();
-            }
-            growth *= (1.0 + dayRet);
-        }
-        return growth - 1.0;
-    }
-
     private double turnover(List<BigDecimal> oldW, List<BigDecimal> newW) {
         double t = 0.0;
         for (int i = 0; i < oldW.size(); i++) {
@@ -205,6 +196,10 @@ public class BacktestEngine {
         return MatrixR064.FACTORY.rows(data);
     }
 
+    /**
+     * Daily equal-weight benchmark starting from the first test window day.
+     * Length matches the strategy's daily equity curve.
+     */
     private List<Double> buildBenchmark(MatrixR064 returns) {
         int totalRows = (int) returns.countRows();
         int assets    = (int) returns.countColumns();
@@ -212,16 +207,12 @@ public class BacktestEngine {
 
         List<Double> curve = new ArrayList<>();
         double equity = 1.0;
-        for (int t = window; t <= totalRows - horizon; t++) {
-            double pnl = 0.0;
-            for (int d = t; d < t + horizon; d++) {
-                double dayRet = 0.0;
-                for (int a = 0; a < assets; a++) {
-                    dayRet += returns.get(d, a) * w;
-                }
-                pnl = (1.0 + pnl) * (1.0 + dayRet) - 1.0;
+        for (int t = window; t < totalRows; t++) {
+            double dayRet = 0.0;
+            for (int a = 0; a < assets; a++) {
+                dayRet += returns.get(t, a) * w;
             }
-            equity *= (1.0 + pnl);
+            equity *= (1.0 + dayRet);
             curve.add(equity);
         }
         return curve;
@@ -238,6 +229,7 @@ public class BacktestEngine {
 
         double finalEq = curve.get(curve.size() - 1);
 
+        // Max drawdown from daily equity curve (no longer misses intra-horizon moves)
         double maxDD = 0.0;
         double peak  = curve.get(0);
         for (double v : curve) {
@@ -245,18 +237,20 @@ public class BacktestEngine {
             maxDD = Math.max(maxDD, (peak - v) / peak);
         }
 
+        // Daily return series
         List<Double> rets = new ArrayList<>(curve.size() - 1);
         for (int i = 1; i < curve.size(); i++) {
             rets.add(curve.get(i) / curve.get(i - 1) - 1.0);
         }
 
         double mean = rets.stream().mapToDouble(x -> x).average().orElse(0.0);
+        double rfPerDay = riskFreeRate / (double) Defaults.TRADING_DAYS_PER_YEAR;
 
-        double rfPerStep = riskFreeRate * horizon / (double) Defaults.TRADING_DAYS_PER_YEAR;
+        // Downside deviation (for Sortino)
         double downsideSqSum = 0.0;
         int downsideCount = 0;
         for (double r : rets) {
-            double diff = r - rfPerStep;
+            double diff = r - rfPerDay;
             if (diff < 0) {
                 downsideSqSum += diff * diff;
                 downsideCount++;
@@ -265,18 +259,24 @@ public class BacktestEngine {
         double downsideDev = downsideCount > 0
                 ? Math.sqrt(downsideSqSum / downsideCount) : 1e-10;
 
+        // Standard deviation
         double var = rets.stream().mapToDouble(x -> (x - mean) * (x - mean)).average().orElse(0.0);
         double std = Math.sqrt(var);
 
+        // Sharpe & Sortino annualized from daily returns
+        double annualFactor = Math.sqrt(Defaults.TRADING_DAYS_PER_YEAR);
         double sharpe = std > 1e-10
-                ? (mean - rfPerStep) / std * Math.sqrt((double) Defaults.TRADING_DAYS_PER_YEAR / horizon) : 0.0;
+                ? (mean - rfPerDay) / std * annualFactor : 0.0;
 
         double sortino = downsideDev > 1e-10
-                ? (mean - rfPerStep) / downsideDev * Math.sqrt((double) Defaults.TRADING_DAYS_PER_YEAR / horizon) : 0.0;
+                ? (mean - rfPerDay) / downsideDev * annualFactor : 0.0;
 
-        double annualizedReturn = (finalEq - 1.0) * Defaults.TRADING_DAYS_PER_YEAR / (curve.size() * horizon);
+        // Geometric annualized return
+        double annualizedReturn = Math.pow(finalEq,
+                (double) Defaults.TRADING_DAYS_PER_YEAR / curve.size()) - 1.0;
         double calmar = maxDD > 1e-10 ? annualizedReturn / maxDD : 0.0;
 
+        // VaR(95%) & CVaR(95%) from daily returns
         List<Double> sorted = rets.stream().sorted().toList();
         int idx95 = (int) Math.floor(sorted.size() * 0.05);
         double var95 = idx95 < sorted.size() ? -sorted.get(idx95) : 0.0;

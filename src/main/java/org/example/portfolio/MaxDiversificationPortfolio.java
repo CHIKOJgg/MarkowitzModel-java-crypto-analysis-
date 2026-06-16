@@ -54,10 +54,18 @@ public class MaxDiversificationPortfolio implements PortfolioModel {
             List<BigDecimal> weights = new ArrayList<>(n);
             for (int i = 0; i < n; i++) {
                 double w = raw[i] * scale;
-                // Apply per-asset bounds
                 if (w > maxLong) w = maxLong;
                 if (w < -maxShort) w = -maxShort;
                 weights.add(BigDecimal.valueOf(w));
+            }
+            // Re-normalize after clamping to preserve target leverage
+            double newAbsSum = 0;
+            for (BigDecimal w : weights) newAbsSum += Math.abs(w.doubleValue());
+            if (newAbsSum > 1e-12 && Math.abs(newAbsSum - leverage) > 1e-10) {
+                double reScale = leverage / newAbsSum;
+                for (int i = 0; i < n; i++) {
+                    weights.set(i, weights.get(i).multiply(BigDecimal.valueOf(reScale)));
+                }
             }
             return weights;
         } catch (Exception e) {

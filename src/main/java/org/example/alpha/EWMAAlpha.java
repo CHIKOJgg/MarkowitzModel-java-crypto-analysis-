@@ -37,10 +37,8 @@ public class EWMAAlpha implements AlphaModel {
         double[][] mu = new double[1][cols];
 
         for (int j = 0; j < cols; j++) {
-            // BUG FIX: was initialised to 0, which biases the estimate toward 0
-            // for the entire window. Seed with the first observed return instead.
-            double ewma = returns.get(0, j);
-            for (int i = 1; i < rows; i++) {
+            double ewma = 0;
+            for (int i = 0; i < rows; i++) {
                 ewma = alpha * returns.get(i, j) + (1 - alpha) * ewma;
             }
             mu[0][j] = ewma < 0 ? ewma - shortPenalty : ewma;

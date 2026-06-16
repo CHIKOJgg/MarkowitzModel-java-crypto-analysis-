@@ -14,13 +14,34 @@ public class ForecastEngine {
     private final double confidence95;
     private final double confidence50;
 
+    // ── Forecast model tuning ─────────────────────────────────────────────
+    /**
+     * Maximum fraction of the raw historical daily mean that is carried
+     * forward as forward-looking drift. Historical daily means are extremely
+     * noisy (their standard error is often larger than the mean itself), so
+     * naively projecting them forward for a 90-day horizon produces absurd
+     * cumulative numbers (e.g. +365% annualized). This caps how much of the
+     * estimate we "believe" going forward; the actual weight applied is
+     * scaled further by the signal-to-noise ratio of the mean estimate.
+     */
+    private static final double DRIFT_SHRINKAGE_MAX = 0.35;
+
+    /** Weight of short-term momentum (recent vs. long-term mean) in the drift blend. */
+    private static final double MOMENTUM_WEIGHT = 0.3;
+
+    /** Speed at which the near-term drift converges toward the shrunk long-run drift. */
+    private static final double MEAN_REV_SPEED = 0.05;
+
+    /** Multiple of daily vol used to clamp the (already shrunk) per-day point forecast. */
+    private static final double DAILY_MOVE_CAP_MULT = 2.0;
+
     public ForecastEngine() {
         this.confidence95 = Defaults.Z_95;
         this.confidence50 = Defaults.Z_50;
     }
 
     public List<ForecastResult> forecast(MatrixR064 returns, int horizon,
-                                          List<String> assetNames) {
+                                         List<String> assetNames) {
         int cols = (int) returns.countColumns();
         int rows = (int) returns.countRows();
         List<ForecastResult> results = new ArrayList<>();
@@ -40,7 +61,7 @@ public class ForecastEngine {
     }
 
     private ForecastResult forecastAsset(double[] series, String name, int horizon,
-                                          String regime) {
+                                         String regime) {
         int T = series.length;
 
         double mu    = mean(series);
@@ -59,7 +80,16 @@ public class ForecastEngine {
             default          -> 1.0;
         };
 
-        double meanRevSpeed = 0.12;
+        // ── Shrink the drift estimates ──────────────────────────────────────
+        // Standard error of the sample mean: SE = sigma / sqrt(T).
+        // Signal-to-noise ratio in [0,1): how much of mu is "signal" vs noise.
+        double seMu = sigma / Math.sqrt(Math.max(T, 1));
+        double snr  = (mu * mu) / (mu * mu + seMu * seMu + 1e-18);
+        double driftShrink = DRIFT_SHRINKAGE_MAX * snr;
+
+        double muAdj       = mu * driftShrink;
+        double momentumAdj = momentum * MOMENTUM_WEIGHT;
+
         double alpha = Math.min(0.4, Math.max(0.05, 2.0 / (lookback + 1)));
         double ewma = series[0];
         double ewmaVar = series[0] * series[0];
@@ -67,57 +97,81 @@ public class ForecastEngine {
             ewma = alpha * series[i] + (1 - alpha) * ewma;
             ewmaVar = alpha * series[i] * series[i] + (1 - alpha) * ewmaVar;
         }
+        double ewmaAdj = ewma * driftShrink;
 
         double dailyVol = Math.sqrt(Math.max(ewmaVar, 1e-12));
-        double volCap = Math.max(dailyVol, sigma) * 2.5;
+        double dailyCap = Math.max(dailyVol, sigma) * DAILY_MOVE_CAP_MULT;
+        // Keep well away from -100% per day so log() below stays finite/sane.
+        dailyCap = Math.min(dailyCap, 0.5);
 
-        // Drift: blend recent EWMA with momentum, mean-revert toward long-term mu
-        double drift = 0.7 * ewma + 0.3 * momentum;
+        // Near-term drift: blend shrunk EWMA with shrunk momentum, then mean-revert
+        // toward the shrunk long-run drift (muAdj) over the forecast horizon.
+        double nearTermDrift = 0.5 * ewmaAdj + 0.5 * momentumAdj;
+
         double[] pointForecast = new double[horizon];
         for (int h = 0; h < horizon; h++) {
-            double weight = Math.exp(-meanRevSpeed * (h + 1));
-            double raw = (1 - weight) * mu + weight * drift;
-            pointForecast[h] = Math.max(-volCap, Math.min(volCap, raw));
+            double weight = Math.exp(-MEAN_REV_SPEED * (h + 1));
+            double raw = (1 - weight) * muAdj + weight * nearTermDrift;
+            pointForecast[h] = Math.max(-dailyCap, Math.min(dailyCap, raw));
         }
 
         double[] volForecast = ewmaVolForecast(series, horizon, Defaults.EWMA_LAMBDA, regimeVolMult);
 
-        // Confidence intervals
+        // ── Cumulative (log-space) path & confidence intervals ──────────────
+        // Aggregating drift and variance in log-space keeps the cumulative
+        // return distribution internally consistent: lower bounds can never
+        // imply a loss worse than -100%, and the CI at day h correctly
+        // reflects h days of accumulated drift + variance (not a 1-day point
+        // forecast mixed with an h-day volatility, as before).
+        double[] cumLogReturn = new double[horizon];
+        double[] cumVar       = new double[horizon];
+        double runningLog = 0;
+        double runningVar = 0;
+        for (int h = 0; h < horizon; h++) {
+            runningLog += Math.log1p(pointForecast[h]);
+            runningVar += volForecast[h] * volForecast[h];
+            cumLogReturn[h] = runningLog;
+            cumVar[h] = runningVar;
+        }
+
         double[] lower95 = new double[horizon];
         double[] upper95 = new double[horizon];
         double[] lower50 = new double[horizon];
         double[] upper50 = new double[horizon];
 
         for (int h = 0; h < horizon; h++) {
-            double cumVol = 0;
-            for (int k = 0; k <= h; k++) cumVol += volForecast[k] * volForecast[k];
-            cumVol = Math.sqrt(cumVol);
-            lower95[h] = pointForecast[h] - confidence95 * cumVol;
-            upper95[h] = pointForecast[h] + confidence95 * cumVol;
-            lower50[h] = pointForecast[h] - confidence50 * cumVol;
-            upper50[h] = pointForecast[h] + confidence50 * cumVol;
+            double sd = Math.sqrt(cumVar[h]);
+            lower95[h] = Math.exp(cumLogReturn[h] - confidence95 * sd) - 1.0;
+            upper95[h] = Math.exp(cumLogReturn[h] + confidence95 * sd) - 1.0;
+            lower50[h] = Math.exp(cumLogReturn[h] - confidence50 * sd) - 1.0;
+            upper50[h] = Math.exp(cumLogReturn[h] + confidence50 * sd) - 1.0;
         }
 
+        // ── Historical (backward-looking) descriptive stats ─────────────────
         double annReturn = mu * Defaults.TRADING_DAYS_PER_YEAR;
         double annVol    = sigma * Math.sqrt(Defaults.TRADING_DAYS_PER_YEAR);
         double[] acf = autocorrelation(series, Math.min(20, T / 3));
         double trend = acf.length > 1 ? acf[1] : 0;
 
-        double cumReturn = 0;
-        for (int h = 0; h < horizon; h++) cumReturn += pointForecast[h];
-        Signal signal = classifySignal(cumReturn, dailyVol, horizon, momentum, ewma);
-        RiskLevel riskLevel = classifyRisk(annVol);
+        // ── Forward-looking metrics (derived from the shrunk forecast) ──────
+        double cumReturn   = Math.exp(cumLogReturn[horizon - 1]) - 1.0; // geometric, day "horizon"
+        double cumVolFinal = Math.sqrt(cumVar[horizon - 1]);
 
-        double forecastSharpe = annVol > 1e-12
-                ? (cumReturn * Defaults.TRADING_DAYS_PER_YEAR / horizon) / annVol : 0.0;
+        // forecastSharpe uses the *shrunk* forward drift, annualized arithmetically,
+        // against the (reliable) historical annualized volatility.
+        double forwardAnnReturn = muAdj * Defaults.TRADING_DAYS_PER_YEAR;
+        double forecastSharpe = annVol > 1e-12 ? forwardAnnReturn / annVol : 0.0;
+
+        Signal signal = classifySignal(cumLogReturn[horizon - 1], cumVolFinal, momentumAdj, dailyVol);
+        RiskLevel riskLevel = classifyRisk(annVol);
 
         double expRangeLow  = lower95[horizon - 1];
         double expRangeHigh = upper95[horizon - 1];
 
-        double cumVolEnd = 0;
-        for (int k = 0; k < horizon; k++) cumVolEnd += volForecast[k] * volForecast[k];
-        cumVolEnd = Math.sqrt(cumVolEnd);
-        double probLoss = normalCDF(-cumReturn / (cumVolEnd > 1e-12 ? cumVolEnd : 1e-12));
+        // P(cumulative simple return < 0) under the log-normal approximation.
+        double probLoss = cumVolFinal > 1e-12
+                ? normalCDF(-cumLogReturn[horizon - 1] / cumVolFinal)
+                : (cumLogReturn[horizon - 1] < 0 ? 1.0 : 0.0);
 
         double maxDdEst = estimateMaxDrawdown(pointForecast, volForecast, horizon);
 
@@ -158,18 +212,22 @@ public class ForecastEngine {
         return errors;
     }
 
-    private Signal classifySignal(double cumReturn, double dailyVol, int horizon,
-                                   double momentum, double ewma) {
-        double cumVol = dailyVol * Math.sqrt(horizon);
-        double tStat = cumVol > 1e-12 ? cumReturn / cumVol : 0;
-        double momentumScore = momentum / (dailyVol + 1e-12);
-        double composite = 0.6 * tStat + 0.4 * momentumScore;
+    /**
+     * Classifies the directional signal based on the *cumulative* forecast
+     * (log-return over the full horizon) relative to its cumulative
+     * uncertainty, with a secondary boost/penalty from short-term momentum.
+     */
+    private Signal classifySignal(double cumLogReturn, double cumVol,
+                                  double momentumAdj, double dailyVol) {
+        double tStat = cumVol > 1e-12 ? cumLogReturn / cumVol : 0;
+        double momentumScore = momentumAdj / (dailyVol + 1e-12);
+        double composite = 0.7 * tStat + 0.3 * momentumScore;
 
-        if (composite > 1.0)      return Signal.STRONG_BUY;
+        if (composite > 1.0)       return Signal.STRONG_BUY;
         else if (composite > 0.35) return Signal.BUY;
         else if (composite > -0.35) return Signal.HOLD;
         else if (composite > -1.0) return Signal.SELL;
-        else                       return Signal.STRONG_SELL;
+        else                        return Signal.STRONG_SELL;
     }
 
     private RiskLevel classifyRisk(double annVol) {
@@ -188,6 +246,7 @@ public class ForecastEngine {
             for (int h = 0; h < horizon; h++) {
                 double z = rng.nextGaussian();
                 double ret = pointForecast[h] + volForecast[h] * z;
+                ret = Math.max(ret, -0.99); // never let a single step wipe out >99%
                 eq *= (1 + ret);
                 if (eq > peak) peak = eq;
                 double dd = (peak - eq) / peak;
@@ -199,7 +258,7 @@ public class ForecastEngine {
     }
 
     private double[] ewmaVolForecast(double[] series, int horizon, double lambda,
-                                      double regimeMult) {
+                                     double regimeMult) {
         int T = series.length;
         double[] vol = new double[T];
         vol[0] = series[0] * series[0];
