@@ -1,0 +1,11 @@
+.git/
+.gitignore
+.gitattributes
+.dockerignore
+target/
+.idea/
+*.csv
+*.html
+output/
+portfolio_results_*
+config.properties

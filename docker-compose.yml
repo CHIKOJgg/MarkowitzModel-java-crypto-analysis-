@@ -1,0 +1,31 @@
+services:
+  optimizer:
+    build: .
+    container_name: crypto-portfolio
+    hostname: crypto-portfolio
+    stdin_open: true
+    tty: true
+    environment:
+      # X11 display forwarding
+      #   Linux:  DISPLAY=$DISPLAY
+      #   Windows (VcXsrv):  DISPLAY=host.docker.internal:0
+      #   macOS (XQuartz):   DISPLAY=host.docker.internal:0
+      - DISPLAY=${DISPLAY:-host.docker.internal:0}
+    volumes:
+      # X11 socket (Linux only; Windows/macOS use host.docker.internal)
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      # Config with API key (gitignored — keep local)
+      - ./config.properties:/app/config.properties:ro
+      # Output reports
+      - ./output:/app/output
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Run tests without a display
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: crypto-portfolio-test
+    volumes:
+      - ./config.properties:/app/config.properties:ro
